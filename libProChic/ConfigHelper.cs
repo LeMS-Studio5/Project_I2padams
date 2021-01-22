@@ -8,28 +8,44 @@ namespace libProChic
     class ConfigHelper
     {
         private List<ConfigGroup> winINI;            //Variable that will hold each config line
-        private String fileLocation = "";         //File Location of the Config File
-        public ConfigHelper(string fileName)
-        {
-            if (File.Exists(fileName))
-            {          //Checks to see if file exist
-                fileLocation = fileName;            //If does then Saves the config file location
-                String[] fil = File.ReadAllLines(fileLocation);     //Reads config file and places it in String varible fil
-                for (int i = 0; i <= fil.Length - 1; i++)      //Loops through each line of the fil
-                {
-                    if (fil[i].StartsWith("[") && fil[i].EndsWith("]")){     //Checks to see if line is a group header                    
-                        ConfigGroup grp = new ConfigGroup(fil[i], i);       //Creates a new group and sets the name and index of header
-                        do{         //Loops through each config in group
-                            grp.Add(new Config(fil[i]));    //Creates config out of line and adds it to grp
-                            i++;        //Increments to next line of String
-                        } while (fil[i] != "" || i>=fil.Length);     //Loops through till blank line or end of array
-                        grp.Index = winINI.Count;   //Adds Index, found by the count of the previous amount in winINI
-                        winINI.Add(grp);        //Adds grp to winINI (which holds the complete config file)
-                    }
+        private String fileLocation = "";         //File Location of the Config File        
+        public ConfigHelper(string fileName){
+            try
+            {
+                if (!File.Exists(fileName)) File.Create(fileName);      //If file doesn't exist, then create it
+            }catch{
+                throw new Exception("File can't be created");       //Errors out if folder isn't created or doesn't have permissions
+            }
+            fileLocation = fileName;            //If does then Saves the config file location
+            updateConfig();     //Adds contents of config to WinINI
+            FileSystemWatcher fsw = new FileSystemWatcher(fileLocation);        //Creates FileWatcher to update file as needed
+            fsw.WaitForChanged(WatcherChangeTypes.Changed);
+            fsw.EnableRaisingEvents = true;     //Enables FSW to raise events
+            fsw.Changed += fsw_Changed;         //Adds method to be exe when event is raised
+        }
+        private void fsw_Changed(object sender, FileSystemEventArgs e){
+            updateConfig(); //When Config is updated externally, then update Config
+            ConfigUpdated(this, new EventArgs());
+        }
+        private void updateConfig(){
+            String[] fil = File.ReadAllLines(fileLocation);     //Reads config file and places it in String varible fil
+            winINI.Clear();     //Clears any items that are currently in the list
+            for (int i = 0; i <= fil.Length - 1; i++)      //Loops through each line of the fil
+            {
+                if (fil[i].StartsWith("[") && fil[i].EndsWith("]"))
+                {     //Checks to see if line is a group header                    
+                    ConfigGroup grp = new ConfigGroup(fil[i], i);       //Creates a new group and sets the name and index of header
+                    do
+                    {         //Loops through each config in group
+                        grp.Add(new Config(fil[i]));    //Creates config out of line and adds it to grp
+                        i++;        //Increments to next line of String
+                    } while (fil[i] != "" || i >= fil.Length);     //Loops through till blank line or end of array
+                    grp.Index = winINI.Count;   //Adds Index, found by the count of the previous amount in winINI
+                    winINI.Add(grp);        //Adds grp to winINI (which holds the complete config file)
                 }
             }
-            else  Dispose();      //If File doesn't exist then dispose
         }
+        public event EventHandler ConfigUpdated;
         public ConfigGroup GetConfigGroup(string group2Find){
             foreach(ConfigGroup grp in winINI){     //Loops through each ConfigGroup
                 if (grp.Name == group2Find) return grp;     //If the group name matches the one being searched  for then return it
@@ -47,6 +63,9 @@ namespace libProChic
         }
         public void RemoveConfig(String configGroup, string Config2Find){
             GetConfigGroup(configGroup).Remove(Config2Find);        //Finds group and removes config specified in String
+        }
+        public void AddGroup(String groupName){
+            winINI.Add(new ConfigGroup(groupName)); //Adds new Config Group and adds it to winINI
         }
         private Boolean FileChanged{
             set{
