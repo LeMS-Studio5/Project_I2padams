@@ -1,2 +1,2 @@
-# ProjectChicago-
-Public Repository for Project Chicago
+# Project I2padams-
+Project I2padams is a new rewrite of Project Chicago (2018-2020) which will have Histacom, Shift0S and Dark Studios OS mixed together. There has been so many attempts at this game and trying to get it right (This is my third rewrite). Even though this project is written in C#, the code is based on the VB code of Project Chicago which uses the VB code from Histacom (written by Philip Adams). I did receive permission from Philip in April 2018 to use and modify the code from Histacom, ShiftOS and Dark Studios OS.
