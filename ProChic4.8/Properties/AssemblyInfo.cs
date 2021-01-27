@@ -5,10 +5,10 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ProChic4.8")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Project Chicago")]
+[assembly: AssemblyDescription("2nd Rewite of Pro Chic")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("LeMS Studios")]
 [assembly: AssemblyProduct("ProChic4.8")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
