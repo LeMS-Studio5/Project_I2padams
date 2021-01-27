@@ -50,7 +50,7 @@ namespace libProChic
                         strPath = File.ReadAllLines(strPath).First();
                     else
                         // MessageBox.Show("g")
-                        strPath = com.getRoot(2359) + File.ReadAllLines(strPath).First().ToCharArray();
+                        strPath = com.toSystemPath(@"C:\") + File.ReadAllLines(strPath).First().ToCharArray();
                     // MessageBox.Show(strPath & ", " & File.Exists(strPath))
                     // If File.ReadAllLines(strFilPath).Count >= 5 Then Console.WriteLine(strFilPath & ((File.ReadAllLines(strFilPath)(4)))) ' = "Sys")))
                     if (ink.Width + ink.Height == 2)
@@ -62,7 +62,7 @@ namespace libProChic
                     return com.prepareImage(ink, FollowPallet);
                 }
                 if (strPath.EndsWith("U95exe", true, System.Globalization.CultureInfo.CurrentUICulture) || strPath.EndsWith("U95com", true, System.Globalization.CultureInfo.CurrentUICulture))
-                    return Properties.Resources.Attention;
+                    return null;// Properties.Resources.Attention;
                 if ((ViewType == ExplorerType.ControlPanel && strPath.EndsWith("cpl", true, System.Globalization.CultureInfo.CurrentUICulture)) || strPath.EndsWith("exe", true, System.Globalization.CultureInfo.CurrentUICulture))
                 {
                     TsudaKageyu.IconExtractor i = new TsudaKageyu.IconExtractor(strPath); // addImage(CDrivePath & File.ReadAllLines(strPath).First, "")
@@ -92,7 +92,7 @@ namespace libProChic
                 }
                 Console.WriteLine(ex.ToString());
                 // MessageBox.Show(ex.ToString)
-                return Properties.Resources.Error95;
+                return null;//Properties.Resources.Error95;
             }
         }
         public Boolean AutoRefreshFolder { get; set; } = false;
@@ -191,7 +191,7 @@ namespace libProChic
             }
         }
         public SizeType FileSizeType { set; get; } = SizeType.Bytes;
-        private string filt = "*.*";
+        private String filt = "*.*";
         public String Filter
         {
             set
@@ -207,6 +207,7 @@ namespace libProChic
                 return filt;
             }
         }
+        public Boolean FollowPallet { get; set; }
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
@@ -214,6 +215,14 @@ namespace libProChic
         }
         private ImageList iltLarge = new ImageList();
         public Boolean OnErrorGoToParentDirectory { get; set; } = false;
+        private Icon[] OSIco;
+        private string OSPath;
+        public Icon[] OSIcons{
+            get
+            {
+                return OSIco;
+            }
+        }
         public void RefreshFolder()
         {
             try
@@ -281,7 +290,7 @@ namespace libProChic
                                     else
                                         base.Items.Add(System.IO.Path.GetFileName(fil), fil); // 'MyBase.Items.Add(fil.Substring(fil.LastIndexOf("\"c) + 1), fil.ToString()) 'Add Files & File Properties To ListView     Add Files & File Properties To ListView 
                                     base.Items[SubItemIndex].SubItems.Add(((new FileInfo(fil)).Length / FileSizeType.GetHashCode()) + " " + FileSizeType.ToString());
-                                    base.Items[SubItemIndex].SubItems.Add(getExtension(fil));
+                                    //base.Items[SubItemIndex].SubItems.Add(getExtension(fil));
                                 }
                                 base.Items[SubItemIndex].Tag = fil;
                                 base.Items[SubItemIndex].ImageKey = fil;
@@ -298,9 +307,9 @@ namespace libProChic
                     UpDirectory();
             }
         }
-        public string Root{
+        public String Root{
             set{
-                if (value == "")  value = System.IO.Path.GetPathRoot(Application.ExecutablePath);
+                if (value == "" || value == null)  value = System.IO.Path.GetPathRoot(Application.ExecutablePath);
                 if (!value.EndsWith(@"\"))  value += @"\";
                 rooted = value;
                 if (AutoRefreshFolder)   RefreshFolder();
@@ -309,7 +318,7 @@ namespace libProChic
                 return rooted;
             }
         }
-        private string rooted;
+        private String rooted;
         public struct SHFILEINFO // Contains information about a file object
         {
             public IntPtr hIcon;            // Icon
