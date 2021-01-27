@@ -7,7 +7,7 @@ namespace libProChic
 {
     class ConfigHelper
     {
-        private List<ConfigGroup> winINI;            //Variable that will hold each config line
+        private List<ConfigGroup> winINI =new List<ConfigGroup>();            //Variable that will hold each config line
         private String fileLocation = "";         //File Location of the Config File        
         public ConfigHelper(string fileName){
             try
@@ -17,11 +17,12 @@ namespace libProChic
                 throw new Exception("File can't be created");       //Errors out if folder isn't created or doesn't have permissions
             }
             fileLocation = fileName;            //If does then Saves the config file location
-            updateConfig();     //Adds contents of config to WinINI
-            FileSystemWatcher fsw = new FileSystemWatcher(fileLocation);        //Creates FileWatcher to update file as needed
-            fsw.WaitForChanged(WatcherChangeTypes.Changed);
-            fsw.EnableRaisingEvents = true;     //Enables FSW to raise events
-            fsw.Changed += fsw_Changed;         //Adds method to be exe when event is raised
+         //  Console.WriteLine(Path.GetDirectoryName(fileName));
+             updateConfig();     //Adds contents of config to WinINI
+         //  FileSystemWatcher fsw = new FileSystemWatcher(Path.GetDirectoryName(fileName));        //Creates FileWatcher to update file as needed
+         //  fsw.WaitForChanged(WatcherChangeTypes.Changed);
+         //  fsw.EnableRaisingEvents = true;     //Enables FSW to raise events
+         //  fsw.Changed += fsw_Changed;         //Adds method to be exe when event is raised
         }
         private void fsw_Changed(object sender, FileSystemEventArgs e){
             updateConfig(); //When Config is updated externally, then update Config
@@ -35,11 +36,11 @@ namespace libProChic
                 if (fil[i].StartsWith("[") && fil[i].EndsWith("]"))
                 {     //Checks to see if line is a group header                    
                     ConfigGroup grp = new ConfigGroup(fil[i], i);       //Creates a new group and sets the name and index of header
-                    do
-                    {         //Loops through each config in group
+                    i++;    //Increments down to first line in group
+                    for(bool b=false; fil[i] != "" || i >= fil.Length;){      //Loops through each config in group, need for loop for pretest loop, j won't be used, but is needed for the loop  Loops through till blank line or end of array                    
                         grp.Add(new Config(fil[i]));    //Creates config out of line and adds it to grp
                         i++;        //Increments to next line of String
-                    } while (fil[i] != "" || i >= fil.Length);     //Loops through till blank line or end of array
+                    }
                     grp.Index = winINI.Count;   //Adds Index, found by the count of the previous amount in winINI
                     winINI.Add(grp);        //Adds grp to winINI (which holds the complete config file)
                 }
@@ -132,6 +133,7 @@ namespace libProChic
         public Config(string settingLine)
         {
             if (!settingLine.Contains("=")) {
+                Console.WriteLine(settingLine);
                 throw new Exception("Setting Line is not format correctly");
             }
             else
