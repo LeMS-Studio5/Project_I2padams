@@ -44,7 +44,7 @@ namespace libProChic
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            OwnerDraw = true;
+            //OwnerDraw = true;
             DoubleBuffered = true;
            SelectedColor = com.convertColour(com.Config.GetConfig("Colors", "Hilight").Setting);
            SelectedTextColor = com.convertColour(com.Config.GetConfig("Colors", "HilightText").Setting);

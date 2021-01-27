@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace libProChic
 {
-    class ConfigHelper
+  public  class ConfigHelper
     {
         private List<ConfigGroup> winINI =new List<ConfigGroup>();            //Variable that will hold each config line
         private String fileLocation = "";         //File Location of the Config File        
@@ -49,8 +49,10 @@ namespace libProChic
         public event EventHandler ConfigUpdated;
         public ConfigGroup GetConfigGroup(string group2Find){
             foreach(ConfigGroup grp in winINI){     //Loops through each ConfigGroup
+               // Console.WriteLine(grp.Name);
                 if (grp.Name == group2Find) return grp;     //If the group name matches the one being searched  for then return it
             }
+            Console.WriteLine(group2Find);
             return new ConfigGroup("Empty");        //If the group was not found then return an empty Config Group
         }     
         public void RemoveGroup(string Group2Find){
@@ -125,11 +127,8 @@ namespace libProChic
     { public Config()
         {
         }
-        public Config(string setName, string val) : this()
-        {
-            SettingName = setName;
-            Setting = val;
-        }
+        public Config(string setName, string val) : this(setName + "=" + val)
+        {        }
         public Config(string settingLine)
         {
             if (!settingLine.Contains("=")) {
@@ -140,7 +139,7 @@ namespace libProChic
             {
                 String[] set = settingLine.Split('=');
                 SettingName = set[0];
-                Setting = set[1];
+                Setting = set[1];                
             }
         }
         public string SettingName { get; set; } = "";
@@ -156,7 +155,7 @@ namespace libProChic
     {
         private int headerIndex = 0;
         public String Name;
-        public int Index;
+        public int Index { get; set; }
         private List<Config> Configs = new List<Config>();
         public ConfigGroup(String groupName, int lineIndex):this(groupName)
         {
@@ -164,8 +163,8 @@ namespace libProChic
         }
         public ConfigGroup(String groupName)
         {
-            if (groupName.StartsWith("[")) groupName.Substring(1);
-            if (groupName.EndsWith("]")) groupName.Substring(0,groupName.Length-1);
+            if (groupName.StartsWith("[")) groupName = groupName.Substring(1);
+            if (groupName.EndsWith("]")) groupName=groupName.Substring(0,groupName.Length-1);
             Name = groupName;
         }
         public int Contains(String settingName)
@@ -179,7 +178,9 @@ namespace libProChic
         }
         public void Add(Config cfg)
         {
+            if (cfg.Index == -1) cfg.Index = Configs.Count;
             Configs.Add(cfg);       //Adds new Config to Group
+
         }
         public void RemoveAt(int index)
         {
@@ -208,7 +209,7 @@ namespace libProChic
             }
             catch
             {
-                throw new Exception("Config Name not found");  //If Errors, which happens when configName doesn't exist then error is thrown
+                throw new Exception("Config Name not found: " + Name + ':' + configName);  //If Errors, which happens when configName doesn't exist then error is thrown
             }
         }
         public Config[] ToArray()
