@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace libProChic
-{   
+{
     public class ExplorerListView : ListView
     {
         private System.ComponentModel.IContainer components;
         private MasterClass com = new MasterClass();
-        private string dir="";
-        public Image addImage(string strPath, string strCurrentDir){
+        private string dir = "";
+        public Image addImage(string strPath, string strCurrentDir) {
             string strFilPath = strPath;
             try
             {
@@ -82,7 +82,7 @@ namespace libProChic
             }
             catch (Exception ex)
             {
-                if ((OSIco != null) || OSIco.Count() < 1)
+                if ((OSIco != null) && OSIco.Count() < 1)
                 {
                     SHFILEINFO shInfo = new SHFILEINFO(); // Create and Instantiate File Info Object
                     shInfo.szDisplayName = new string('\0', 260); // Get Display Name
@@ -96,6 +96,7 @@ namespace libProChic
             }
         }
         public Boolean AutoRefreshFolder { get; set; } = false;
+        public new Color BackColor { get { return base.BackColor; } set {base.BackColor = value; if (upDesk) RefreshImage(); } }
         public String Directory
         {
             set
@@ -112,7 +113,7 @@ namespace libProChic
                         dir = value;
                         //fswExplorer.Path = value; // ERROR
                         // MessageBox.Show("Dir")
-                        if ( AutoRefreshFolder)//ViewType != ExplorerType.Simple &&
+                        if (AutoRefreshFolder)//ViewType != ExplorerType.Simple &&
                             RefreshFolder();
                     }
                 }
@@ -148,7 +149,19 @@ namespace libProChic
             DirectoriesAndFiles,
             Files
         }
-        private Image DriveIcon(string path){
+        protected override void Dispose(bool disposing)
+        {
+            try
+            {
+                if (disposing && components != null)
+                    components.Dispose();
+            }
+            finally
+            {
+                base.Dispose(disposing);
+            }
+        }
+        private Image DriveIcon(string path) {
             String dir = File.ReadAllLines(path + @"\(_)drive.info")[0];
             if (dir == "HD")
                 return OSIco[8].ToBitmap();
@@ -178,18 +191,6 @@ namespace libProChic
             General,
             Unlaunchable
         }
-        protected override void Dispose(bool disposing)
-        {
-            try
-            {
-                if (disposing && components != null)
-                    components.Dispose();
-            }
-            finally
-            {
-                base.Dispose(disposing);
-            }
-        }
         public SizeType FileSizeType { set; get; } = SizeType.Bytes;
         private String filt = "*.*";
         public String Filter
@@ -210,58 +211,85 @@ namespace libProChic
         public Boolean FollowPallet { get; set; }
         private void InitializeComponent()
         {
+            // OwnerDraw = false;
             components = new System.ComponentModel.Container();
             DoubleBuffered = true;
         }
-        private ImageList iltLarge = new ImageList();
         public Boolean OnErrorGoToParentDirectory { get; set; } = false;
         private Icon[] OSIco;
         private string OSPath;
-        public Icon[] OSIcons{
+        public Icon[] OSIcons {
             get
             {
                 return OSIco;
             }
         }
+        public string OSIconLocationPath
+        {
+            set
+            {
+                // Dim i As New TsudaKageyu.IconUtil(value)
+                // MessageBox.Show(IO.File.Exists(value))
+                if (System.IO.File.Exists(value))
+                {
+                    OSIco = TsudaKageyu.IconUtil.Split(new Icon(value)); // i.GetAllIcons
+                    OSPath = value;
+                }
+                else
+                {
+                    OSIco = null;
+                    OSPath = "";
+                }
+                // MessageBox.Show("OSICO")
+                if (AutoRefreshFolder)
+                    RefreshFolder();
+            }
+            get
+            {
+                return OSPath;
+            }
+        }
+        private Image pat = new Bitmap(152, 152);
+        public Image Pattern { get { return pat; } set {pat = value; if (upDesk) RefreshImage(); } }
         public void RefreshFolder()
         {
             try
             {
-                if ((base.Items != null)) base.Items.Clear();
-                if (iltLarge != null) iltLarge.Images.Clear();
+                if ((Items != null)) Items.Clear();
+                if (SmallImageList != null) SmallImageList.Images.Clear();
                 if (System.IO.Directory.Exists(dir))
                 {
-                    int SubItemIndex = 0;
-                  //  System.Security.Permissions.FileIOPermission readPermission = new System.Security.Permissions.FileIOPermission(System.Security.Permissions.FileIOPermissionAccess.Read, dir);
-                  //  if (!System.Security.SecurityManager.IsGranted(readPermission))   return;
+                    //  System.Security.Permissions.FileIOPermission readPermission = new System.Security.Permissions.FileIOPermission(System.Security.Permissions.FileIOPermissionAccess.Read, dir);
+                    //  if (!System.Security.SecurityManager.IsGranted(readPermission))   return;
                     if (display == DisplayType.Directories || display == DisplayType.DirectoriesAndFiles)
                     {
                         foreach (string fil in System.IO.Directory.GetDirectories(dir)) // Get Files In Folder
                         {
+                            Console.WriteLine(fil);
                             try
                             {
-                             //   System.Security.Permissions.FileIOPermission writePermission = new System.Security.Permissions.FileIOPermission(System.Security.Permissions.FileIOPermissionAccess.Read, fil);
+                                //   System.Security.Permissions.FileIOPermission writePermission = new System.Security.Permissions.FileIOPermission(System.Security.Permissions.FileIOPermissionAccess.Read, fil);
                                 //if ((System.Security.SecurityManager.IsGranted(writePermission)) && (!modCommunication.GetDirectoryName(fil).StartsWith("$")) && !(new System.IO.DirectoryInfo(fil).Attributes == System.IO.FileAttributes.Hidden || new System.IO.DirectoryInfo(fil).Attributes == System.IO.FileAttributes.Hidden) && !fil.Substring(fil.LastIndexOf('\\') + 1).StartsWith("(_)"))
-                                 // MessageBox.Show("fil: " & fil)
-                                    iltLarge.Images.Add(fil, addImage(fil, dir));
-                                    // AddImages(file, iltDesktopIcons) 'Add Icons
-                                    Int64 intTotal = 0; // CHECK PERMISSIONS OF DIR BEFORE ENTERING
-                                    //System.IO.DirectoryInfo d = new System.IO.DirectoryInfo(fil);
-                                    // MessageBox.Show(d.GetAccessControl.ToString)
-                                    // If d.GetAccessControl Then
-                                    foreach (var SizeFile in System.IO.Directory.GetFiles(fil, "*.*", System.IO.SearchOption.AllDirectories))
-                                    {
-                                       // if (System.Security.SecurityManager.IsGranted(new System.Security.Permissions.FileIOPermission(System.Security.Permissions.FileIOPermissionAccess.Read, SizeFile)))
-                                            intTotal += (new FileInfo(SizeFile)).Length;
-                                    }
-                                    base.Items.Add(fil.Substring(fil.LastIndexOf('\\') + 1).Replace("‰", ":").Replace("ƒ", @"\"), fil); // Add Files & File Properties To ListView
-                                    base.Items[SubItemIndex].ImageKey = fil;
-                                    base.Items[SubItemIndex].SubItems.Add((intTotal / FileSizeType.GetHashCode()) + " " + FileSizeType.ToString());
-                                    base.Items[SubItemIndex].SubItems.Add("File Folder");
-                                    base.Items[SubItemIndex].Tag = fil;
-                                    base.Items[SubItemIndex].SubItems.Add(System.IO.Directory.GetLastWriteTime(fil).ToString());
-                                    SubItemIndex += 1;
-                                    intTotal = 0;                               
+                                // MessageBox.Show("fil: " & fil)
+                                SmallImageList.Images.Add(fil, addImage(fil, dir));
+                                // AddImages(file, iltDesktopIcons) 'Add Icons
+                                Int64 intTotal = 0; // CHECK PERMISSIONS OF DIR BEFORE ENTERING
+                                                    //System.IO.DirectoryInfo d = new System.IO.DirectoryInfo(fil);
+                                                    // MessageBox.Show(d.GetAccessControl.ToString)
+                                                    // If d.GetAccessControl Then
+                                foreach (var SizeFile in System.IO.Directory.GetFiles(fil, "*.*", System.IO.SearchOption.AllDirectories))
+                                {
+                                    // if (System.Security.SecurityManager.IsGranted(new System.Security.Permissions.FileIOPermission(System.Security.Permissions.FileIOPermissionAccess.Read, SizeFile)))
+                                    intTotal += (new FileInfo(SizeFile)).Length;
+                                }
+                                Items.Add(fil.Substring(fil.LastIndexOf('\\') + 1).Replace("‰", ":").Replace("ƒ", @"\"), fil); // Add Files & File Properties To ListView
+                                Items[Items.Count - 1].ImageKey = fil;
+                                Items[Items.Count - 1].ImageIndex = Items.Count - 1;
+                                Items[Items.Count - 1].SubItems.Add((intTotal / FileSizeType.GetHashCode()) + " " + FileSizeType.ToString());
+                                Items[Items.Count - 1].SubItems.Add("File Folder");
+                                Items[Items.Count - 1].Tag = fil;
+                                Items[Items.Count - 1].SubItems.Add(System.IO.Directory.GetLastWriteTime(fil).ToString());
+                                intTotal = 0;
                             }
                             catch (Exception ex)
                             {
@@ -272,31 +300,32 @@ namespace libProChic
                     // MessageBox.Show(dir)
                     // SubItemIndex = 0
                     // MessageBox.Show(filt)
-                 //   if (!System.Security.SecurityManager.IsGranted(readPermission))               return;
+                    //   if (!System.Security.SecurityManager.IsGranted(readPermission))               return;
                     if ((display == DisplayType.DirectoriesAndFiles || display == DisplayType.Files) && System.IO.Directory.Exists(dir))
                     {
                         foreach (string fil in System.IO.Directory.GetFiles(dir, filt)) // Get Files In Folder
                         {
+                            Console.WriteLine(fil);
                             if (fil != null && !System.IO.Path.GetFileName(fil).StartsWith("(_)"))
                             {
                                 // If  Then GoTo n    ' MessageBox.Show(file)
                                 // If Not File.Exists(fil) Then Exit For
-                                iltLarge.Images.Add(fil, addImage(fil, dir));
+                                SmallImageList.Images.Add(fil, addImage(fil, dir));
                                 // iltDesktopIcons.Images.Add(addImage(file, activeDir))
                                 // AddImages(file, iltDesktopIcons) 'Add Icons
                                 // If Not File.Exists(fil) Then Exit For                            
-                                    if (ViewType == ExplorerType.ControlPanel)
-                                        base.Items.Add(System.Diagnostics.FileVersionInfo.GetVersionInfo(fil).ProductName, fil);
-                                    else
-                                        base.Items.Add(System.IO.Path.GetFileName(fil), fil); // 'MyBase.Items.Add(fil.Substring(fil.LastIndexOf("\"c) + 1), fil.ToString()) 'Add Files & File Properties To ListView     Add Files & File Properties To ListView 
-                                    base.Items[SubItemIndex].SubItems.Add(((new FileInfo(fil)).Length / FileSizeType.GetHashCode()) + " " + FileSizeType.ToString());
-                                    //base.Items[SubItemIndex].SubItems.Add(getExtension(fil));
-                                }
-                                base.Items[SubItemIndex].Tag = fil;
-                                base.Items[SubItemIndex].ImageKey = fil;
-                                base.Items[SubItemIndex].SubItems.Add(System.IO.File.GetLastWriteTime(fil).ToString());
-                                SubItemIndex += 1;
+                                if (ViewType == ExplorerType.ControlPanel)
+                                    Items.Add(System.Diagnostics.FileVersionInfo.GetVersionInfo(fil).ProductName, fil);
+                                else
+                                    Items.Add(System.IO.Path.GetFileName(fil), fil); // 'MyItems.Add(fil.Substring(fil.LastIndexOf("\"c) + 1), fil.ToString()) 'Add Files & File Properties To ListView     Add Files & File Properties To ListView 
+                                Items[Items.Count - 1].SubItems.Add(((new FileInfo(fil)).Length / FileSizeType.GetHashCode()) + " " + FileSizeType.ToString());
+                                Items[Items.Count - 1].Tag = fil;
+                                Items[Items.Count - 1].ImageKey = fil;
+                                Items[Items.Count - 1].ImageIndex = Items.Count - 1;
+                                Items[Items.Count - 1].SubItems.Add(System.IO.File.GetLastWriteTime(fil).ToString());
+                                //Items[SubItemIndex].SubItems.Add(getExtension(fil));
                             }
+                        }
                     }
                 }
             }
@@ -307,14 +336,27 @@ namespace libProChic
                     UpDirectory();
             }
         }
-        public String Root{
-            set{
-                if (value == "" || value == null)  value = System.IO.Path.GetPathRoot(Application.ExecutablePath);
-                if (!value.EndsWith(@"\"))  value += @"\";
-                rooted = value;
-                if (AutoRefreshFolder)   RefreshFolder();
+        private void RefreshImage()
+        {
+            if (wallMode == ImageLayout.Tile)
+            {
+                base.BackgroundImage = com.prepareImage((Bitmap)Wallpaper, true);//base.BackColor
+                base.BackgroundImageTiled = true;
             }
-            get{
+            else
+            {
+                base.BackgroundImageTiled = false;
+                base.BackgroundImage = updateBackground(ref pat, ref wall, wallMode, Size, BackColor);
+            }
+        }
+        public String Root {
+            set {
+                if (value == "" || value == null) value = System.IO.Path.GetPathRoot(Application.ExecutablePath);
+                if (!value.EndsWith(@"\")) value += @"\";
+                rooted = value;
+                if (AutoRefreshFolder) RefreshFolder();
+            }
+            get {
                 return rooted;
             }
         }
@@ -338,6 +380,42 @@ namespace libProChic
             MegaBytes = 1048576,
             GigaBytes = 1073741824
         }
+        public static Bitmap updateBackground(ref Image imgPattern, ref Image imgWallpaper, ImageLayout wallpaperMode, Size imgSize, Color backgroundCol)
+        {
+            Console.WriteLine(imgSize);
+            Bitmap bmp = new Bitmap(imgSize.Width, imgSize.Height);
+            int imgH = imgPattern.Height, imgW = imgPattern.Width;
+            Graphics g = Graphics.FromImage(bmp);
+            g.FillRectangle(new SolidBrush(backgroundCol), 0, 0, imgSize.Width, imgSize.Height);
+            if (((imgWallpaper != null)) && wallpaperMode != ImageLayout.Tile)
+            {
+                // If Not imgpattern.Height = 8 OrElse Not imgpattern.Width = 8 Then imgpattern = New Bitmap(imgpattern, 8, 8)
+                for (int x = 0; x <= imgSize.Width; x += imgWallpaper.Width)
+                {
+                    for (int y = 0; y <= imgSize.Height; y += imgWallpaper.Height)
+                        g.DrawImage(imgWallpaper, x, y, imgWallpaper.Width, imgWallpaper.Height);
+                }
+            }
+            else if (wallpaperMode == ImageLayout.Tile)
+            {
+                for (int x = 0; x <= imgSize.Width; x += imgW)
+                {
+                    for (int y = 0; y <= imgSize.Height; y += imgH)
+                        g.DrawImage(imgPattern, x, y, imgW, imgH);
+                }
+            }
+            if (((imgPattern != null)))
+            {
+                if (wallpaperMode == ImageLayout.Center)
+                {
+                    Console.WriteLine(imgH + ',' + imgW);
+                    g.DrawImage(imgPattern, new Rectangle(Convert.ToInt32((imgSize.Width / (double)2) - (imgW / (double)2)), Convert.ToInt32((imgSize.Height / (double)2) - (imgH / (double)2)), imgW, imgH));
+                }
+            }
+            return bmp;
+        }
+        public Boolean UpdateDesktop{ get { return upDesk; } set { upDesk = value; if (value) RefreshImage(); } }
+        private Boolean upDesk = false;
         public void UpDirectory()
         {
             if (dir != rooted)
@@ -346,5 +424,9 @@ namespace libProChic
                 AutoRefreshFolder = false;
         }
         public ExplorerType ViewType { get; set; }
+        private Image wall = new Bitmap(1, 1);
+        public Image Wallpaper { get { return wall; } set {wall = value; if (upDesk) RefreshImage(); } }
+        public ImageLayout WallpaperLayout { get { return wallMode; } set {wallMode = value; if (upDesk) RefreshImage(); } }
+        private ImageLayout wallMode = ImageLayout.None;
     }
 }
