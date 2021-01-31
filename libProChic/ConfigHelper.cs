@@ -19,14 +19,14 @@ namespace libProChic
             fileLocation = fileName;            //If does then Saves the config file location
          //  Console.WriteLine(Path.GetDirectoryName(fileName));
              updateConfig();     //Adds contents of config to WinINI
-         //  FileSystemWatcher fsw = new FileSystemWatcher(Path.GetDirectoryName(fileName));        //Creates FileWatcher to update file as needed
-         //  fsw.WaitForChanged(WatcherChangeTypes.Changed);
-         //  fsw.EnableRaisingEvents = true;     //Enables FSW to raise events
-         //  fsw.Changed += fsw_Changed;         //Adds method to be exe when event is raised
+           FileSystemWatcher fsw = new FileSystemWatcher(Path.GetDirectoryName(fileName));        //Creates FileWatcher to update file as needed
+           fsw.WaitForChanged(WatcherChangeTypes.Changed);
+           fsw.EnableRaisingEvents = true;     //Enables FSW to raise events
+           fsw.Changed += fsw_Changed;         //Adds method to be exe when event is raised
         }
         private void fsw_Changed(object sender, FileSystemEventArgs e){
             updateConfig(); //When Config is updated externally, then update Config
-            ConfigUpdated(this, new EventArgs());
+          //  ConfigUpdated(this, new EventArgs());
         }
         private void updateConfig(){
             String[] fil = File.ReadAllLines(fileLocation);     //Reads config file and places it in String varible fil
@@ -45,6 +45,7 @@ namespace libProChic
                     winINI.Add(grp);        //Adds grp to winINI (which holds the complete config file)
                 }
             }
+            Console.WriteLine("Update");
         }
         public event EventHandler ConfigUpdated;
         public ConfigGroup GetConfigGroup(string group2Find){
