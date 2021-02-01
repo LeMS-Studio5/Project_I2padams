@@ -20,16 +20,32 @@ namespace libProChic
          //  Console.WriteLine(Path.GetDirectoryName(fileName));
              updateConfig();     //Adds contents of config to WinINI
            FileSystemWatcher fsw = new FileSystemWatcher(Path.GetDirectoryName(fileName));        //Creates FileWatcher to update file as needed
-           fsw.WaitForChanged(WatcherChangeTypes.Changed);
+           //fsw.WaitForChanged(WatcherChangeTypes.Changed);
            fsw.EnableRaisingEvents = true;     //Enables FSW to raise events
            fsw.Changed += fsw_Changed;         //Adds method to be exe when event is raised
         }
         private void fsw_Changed(object sender, FileSystemEventArgs e){
             updateConfig(); //When Config is updated externally, then update Config
-          //  ConfigUpdated(this, new EventArgs());
+         if (ConfigUpdated !=null)   ConfigUpdated(sender, e);
+        }
+        public String[] ReadAllLines(String filepath)
+        {
+            FileStream logFileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            StreamReader logFileReader = new StreamReader(logFileStream);
+            List<String> line = new List<string>();
+            while (!logFileReader.EndOfStream)
+            {
+                line.Add(logFileReader.ReadLine());
+                // Your code here
+            }
+
+            // Clean up
+            logFileReader.Close();
+            logFileStream.Close();
+            return line.ToArray();
         }
         private void updateConfig(){
-            String[] fil = File.ReadAllLines(fileLocation);     //Reads config file and places it in String varible fil
+            String[] fil = ReadAllLines(fileLocation);     //Reads config file and places it in String varible fil
             winINI.Clear();     //Clears any items that are currently in the list
             for (int i = 0; i <= fil.Length - 1; i++)      //Loops through each line of the fil
             {
@@ -45,7 +61,6 @@ namespace libProChic
                     winINI.Add(grp);        //Adds grp to winINI (which holds the complete config file)
                 }
             }
-            Console.WriteLine("Update");
         }
         public event EventHandler ConfigUpdated;
         public ConfigGroup GetConfigGroup(string group2Find){
