@@ -20,10 +20,15 @@ namespace libProChic
             if (Directory.Exists(root)) Directory.CreateDirectory(root);    //Creates GameDir if not already created
             con = new ConfigHelper(toSystemPath(@"C:\WINDOWS\WIN.ini"));//Environment.ExpandEnvironmentVariables(" % appdata % ") + @"\LeMS\Update95\C‰ƒ\WINDOWS
             ColourLoad();
+            Config.ConfigUpdated += configUpdate;
+        }
+        private void configUpdate(Object sender, EventArgs e)
+        {
+            ColourLoad();
         }
         private void ColourLoad()
         {
-         
+            colourMap.Clear();
             colPallette.Clear();
             foreach (String col in File.ReadAllLines(toSystemPath(con.GetConfig("windows", "Color").Setting)))
             {
@@ -84,7 +89,7 @@ namespace libProChic
         {
             Color closeColour = col;
             double closeNum = double.MaxValue;
-            if (col.A < 200)
+            if (col.A < 200 || AlphaColor==col)
                 return AlphaColor;
             foreach (Color colPal in colPallette)
             {
@@ -106,7 +111,7 @@ namespace libProChic
             return Math.Sqrt((((512 + rmean) * r * r) >> 8) + 4 * g * g + (((767 - rmean) * b * b) >> 8));
         }
         public Bitmap Process(System.Drawing.Bitmap bmp){
-            return Process(bmp, Color.Empty);
+            return Process(bmp, Color.Transparent);
         }
         public Bitmap Process(System.Drawing.Bitmap bmp,  Color alpha){
             if ((bmp.PixelFormat != PixelFormat.Format24bppRgb && bmp.PixelFormat != PixelFormat.Format32bppArgb) || (bmp.Width < 1 || bmp.Height < 1)){ // <== A1
@@ -136,7 +141,12 @@ namespace libProChic
                 return fbitmap.Bitmap;
             }
         }
+        private Dictionary<Color, Color> colourMap = new Dictionary<Color, Color>();
         private Color FindClosestFromPallet(Color col, Color AlphaColor){
+            if (colourMap.ContainsKey(col))
+            {
+                return colourMap[col];
+            }
             Color closeColour = col;
             Double closeNum = Double.MaxValue;
             if (AlphaColor.IsEmpty && col.A < 200) return closeColour;
@@ -148,15 +158,15 @@ namespace libProChic
                     closeColour = colPal;
                 }
             }
+            colourMap.Add(col, closeColour);
             return closeColour;
         }
-        /// <summary>
-        ///     ''' Returns Host Drive Path from a in-game path
-        ///     ''' </summary>
+        /// <summary>Returns Host Drive Path from a in-game path</summary>
         public string toSystemPath(string path)
         {
-            char dirLetter = path.ToCharArray()[0];
+            if (path == "/") return root;
             if (path == "") return "";
+            char dirLetter = path.ToCharArray()[0];
             if (char.IsLetter(path.First()) && path.Substring(1, 1) == ":")
                 path = path.Substring(2);
             return root + dirLetter + "‰ƒ" + path;
