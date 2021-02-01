@@ -10,12 +10,9 @@ using System.Windows.Forms;
 
 namespace libProChic
 {
-    public class ExplorerListView : ListView
-    {
-        private System.ComponentModel.IContainer components;
-        private MasterClass com = new MasterClass();
-        private string dir = "";
-        public Image addImage(string strPath, string strCurrentDir) {
+    public class ExplorerListView : ListView{
+        public Image addImage(string strPath, string strCurrentDir)
+        {
             string strFilPath = strPath;
             try
             {
@@ -95,9 +92,20 @@ namespace libProChic
                 return null;//Properties.Resources.Error95;
             }
         }
-        public Boolean AutoRefreshFolder { get; set; } = false;
-        public new Color BackColor { get { return base.BackColor; } set {base.BackColor = value; if (upDesk) RefreshImage(); } }
-        public String Directory
+        public Boolean AutoDispose = false;
+        public bool AutoRefreshFolder { get; set; } = true;
+        public new Color BackColor { get { return base.BackColor; } set { base.BackColor = value; if (upDesk) RefreshImage("col"); } }
+        public new System.Drawing.Image BackgroundImage
+        {
+            get
+            {
+                return base.BackgroundImage;
+            }
+        }
+        private MasterClass com = new MasterClass();
+        private System.ComponentModel.IContainer components;
+        private string dir = "";
+        public string Directory
         {
             set
             {
@@ -113,7 +121,7 @@ namespace libProChic
                         dir = value;
                         //fswExplorer.Path = value; // ERROR
                         // MessageBox.Show("Dir")
-                        if (AutoRefreshFolder)//ViewType != ExplorerType.Simple &&
+                        if ( AutoRefreshFolder)
                             RefreshFolder();
                     }
                 }
@@ -128,6 +136,13 @@ namespace libProChic
                 return dir;
             }
         }
+        public DirectoryInfo DirInfo()
+        {
+            if (dir != null)
+                return new DirectoryInfo(dir);
+            else
+                return null;
+        }
         private DisplayType display; // = DisplayType.DirectoriesAndFiles
         public DisplayType DisplayMode
         {
@@ -135,7 +150,7 @@ namespace libProChic
             {
                 display = value;
                 // MessageBox.Show("Display")
-                if (AutoRefreshFolder)//ViewType != ExplorerType.Simple && 
+                if (AutoRefreshFolder)
                     RefreshFolder();
             }
             get
@@ -161,28 +176,15 @@ namespace libProChic
                 base.Dispose(disposing);
             }
         }
-        private Image DriveIcon(string path) {
-            String dir = File.ReadAllLines(path + @"\(_)drive.info")[0];
-            if (dir == "HD")
-                return OSIco[8].ToBitmap();
-            if (dir == "flp")
-                return OSIco[6].ToBitmap();
-            if (dir == "cd" || dir == "dvd")
-                return OSIco[11].ToBitmap();
-            return null;
-        }
-        public ExplorerListView() : base()
+        private Image DriveIcon(string path)
         {
-            try
-            {
-                //   Console.WriteLine(Items == null);
-                InitializeComponent();
-                Invalidate();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
+            if (File.ReadAllLines(path + @"\(_)drive.info")[0] == "HD")
+                return OSIco[8].ToBitmap();
+            if (File.ReadAllLines(path + @"\(_)drive.info")[0] == "flp")
+                return OSIco[6].ToBitmap();
+            if (File.ReadAllLines(path + @"\(_)drive.info")[0] == "cd" || File.ReadAllLines(path + @"\(_)drive.info")[0] == "dvd")
+                return OSIco[11].ToBitmap();
+            return null;// Properties.Resources.Error95;
         }
         public enum ExplorerType
         {
@@ -209,21 +211,22 @@ namespace libProChic
             }
         }
         public Boolean FollowPallet { get; set; }
-        private void InitializeComponent()
+        private void fswExplorer_Changed(object sender, FileSystemEventArgs e)
         {
-            // OwnerDraw = false;
-            components = new System.ComponentModel.Container();
-            DoubleBuffered = true;
+            if (!System.IO.Directory.Exists(dir) && AutoDispose)
+                this.Dispose();
+            if (!System.IO.Directory.Exists(dir) && !AutoDispose)
+                UpDirectory();
+            // MessageBox.Show(e.ChangeType.ToString)
+            if (AutoRefreshFolder)
+                RefreshFolder();
         }
-        public Boolean OnErrorGoToParentDirectory { get; set; } = false;
+        public ExplorerListView() : base()    // fswExplorer.CloseFile = m.specialRequest("Communcations", "closeEFSW" & Now.ToShortDateString) & "\close.U95"
+        {
+        }
+        public bool OnErrorGoToParentDirectory { get; set; } = false;
         private Icon[] OSIco;
         private string OSPath;
-        public Icon[] OSIcons {
-            get
-            {
-                return OSIco;
-            }
-        }
         public string OSIconLocationPath
         {
             set
@@ -249,8 +252,10 @@ namespace libProChic
                 return OSPath;
             }
         }
-        private Image pat = new Bitmap(152, 152);
-        public Image Pattern { get { return pat; } set {pat = value; if (upDesk) RefreshImage(); } }
+        [System.Runtime.InteropServices.DllImport("shlwapi")]
+        public static extern long PathIsDirectory(string pszPath); // return 16 for local folders and 1 for server folders
+        private Bitmap pat=new Bitmap(1,1);
+        public Bitmap Pattern { get { return pat; } set {pat = value; if (upDesk) RefreshImage("pat"); } }
         public void RefreshFolder()
         {
             try
@@ -336,8 +341,13 @@ namespace libProChic
                     UpDirectory();
             }
         }
-        private void RefreshImage()
+        public void RefreshFolder(ref string Dir)
         {
+            Directory = Dir;
+        }
+        private void RefreshImage(String source)
+        {
+            if (System.ComponentModel.LicenseManager.UsageMode == System.ComponentModel.LicenseUsageMode.Designtime) return;
             if (wallMode == ImageLayout.Tile)
             {
                 base.BackgroundImage = com.prepareImage((Bitmap)Wallpaper, true);//base.BackColor
@@ -345,18 +355,23 @@ namespace libProChic
             }
             else
             {
+            Console.WriteLine(wallMode + source);
                 base.BackgroundImageTiled = false;
-                base.BackgroundImage = updateBackground(ref pat, ref wall, wallMode, Size, BackColor);
+                base.BackgroundImage = updateBackground(ref pat,ref wall,wallMode,base.Size, BackColor);
             }
         }
-        public String Root {
+        public String Root
+        {
             set {
-                if (value == "" || value == null) value = System.IO.Path.GetPathRoot(Application.ExecutablePath);
-                if (!value.EndsWith(@"\")) value += @"\";
+               if (value == "" || value ==null)
+                    value = System.IO.Path.GetPathRoot(Application.ExecutablePath);
+                if (!value.EndsWith(@"\"))
+                    value += @"\";
                 rooted = value;
                 if (AutoRefreshFolder) RefreshFolder();
             }
-            get {
+            get
+            {
                 return rooted;
             }
         }
@@ -380,41 +395,37 @@ namespace libProChic
             MegaBytes = 1048576,
             GigaBytes = 1073741824
         }
-        public static Bitmap updateBackground(ref Image imgPattern, ref Image imgWallpaper, ImageLayout wallpaperMode, Size imgSize, Color backgroundCol)
+        public static Bitmap updateBackground(ref Bitmap imgPattern, ref Bitmap imgWallpaper, ImageLayout wallpaperMode, Size imgSize, Color backgroundCol)
         {
-            Console.WriteLine(imgSize);
             Bitmap bmp = new Bitmap(imgSize.Width, imgSize.Height);
-            int imgH = imgPattern.Height, imgW = imgPattern.Width;
+            int imgH = imgWallpaper.Height, imgW = imgWallpaper.Width;
             Graphics g = Graphics.FromImage(bmp);
             g.FillRectangle(new SolidBrush(backgroundCol), 0, 0, imgSize.Width, imgSize.Height);
-            if (((imgWallpaper != null)) && wallpaperMode != ImageLayout.Tile)
-            {
-                // If Not imgpattern.Height = 8 OrElse Not imgpattern.Width = 8 Then imgpattern = New Bitmap(imgpattern, 8, 8)
-                for (int x = 0; x <= imgSize.Width; x += imgWallpaper.Width)
-                {
-                    for (int y = 0; y <= imgSize.Height; y += imgWallpaper.Height)
-                        g.DrawImage(imgWallpaper, x, y, imgWallpaper.Width, imgWallpaper.Height);
-                }
-            }
-            else if (wallpaperMode == ImageLayout.Tile)
-            {
-                for (int x = 0; x <= imgSize.Width; x += imgW)
-                {
-                    for (int y = 0; y <= imgSize.Height; y += imgH)
-                        g.DrawImage(imgPattern, x, y, imgW, imgH);
-                }
-            }
-            if (((imgPattern != null)))
-            {
+            //    if (((imgWallpaper != null)) && wallpaperMode == ImageLayout.Tile)
+            //    {
+            //        // If Not imgpattern.Height = 8 OrElse Not imgpattern.Width = 8 Then imgpattern = New Bitmap(imgpattern, 8, 8)
+            //        for (int x = 0; x <= imgSize.Width; x += imgWallpaper.Width)
+            //        {
+            //            for (int y = 0; y <= imgSize.Height; y += imgWallpaper.Height)
+            //                g.DrawImage(imgWallpaper, x, y, imgWallpaper.Width, imgWallpaper.Height);
+            //        }
+            //    }
+            if (wallpaperMode == ImageLayout.Center) g.FillRectangle(new TextureBrush(imgPattern), new Rectangle(0, 0, imgSize.Width, imgSize.Height));
+        //   {
+        //       for (int x = 0; x <= imgSize.Width; x += imgW)
+        //       {
+        //           for (int y = 0; y <= imgSize.Height; y += imgH)
+        //               g.DrawImage(imgPattern, x, y);
+        //       }
+        //   }
                 if (wallpaperMode == ImageLayout.Center)
                 {
-                    Console.WriteLine(imgH + ',' + imgW);
-                    g.DrawImage(imgPattern, new Rectangle(Convert.ToInt32((imgSize.Width / (double)2) - (imgW / (double)2)), Convert.ToInt32((imgSize.Height / (double)2) - (imgH / (double)2)), imgW, imgH));
+                    //Console.WriteLine(imgH + ',' + imgW);
+                    g.DrawImage(imgWallpaper, new Rectangle(Convert.ToInt32((imgSize.Width / (double)2) - (imgW / (double)2)), Convert.ToInt32((imgSize.Height / (double)2) - (imgH / (double)2)),imgW,imgH));
                 }
-            }
             return bmp;
         }
-        public Boolean UpdateDesktop{ get { return upDesk; } set { upDesk = value; if (value) RefreshImage(); } }
+        public Boolean UpdateDesktop { get { return upDesk; } set { upDesk = value; if (value) RefreshImage("Update"); } }
         private Boolean upDesk = false;
         public void UpDirectory()
         {
@@ -423,10 +434,10 @@ namespace libProChic
             else
                 AutoRefreshFolder = false;
         }
-        public ExplorerType ViewType { get; set; }
-        private Image wall = new Bitmap(1, 1);
-        public Image Wallpaper { get { return wall; } set {wall = value; if (upDesk) RefreshImage(); } }
-        public ImageLayout WallpaperLayout { get { return wallMode; } set {wallMode = value; if (upDesk) RefreshImage(); } }
+        public ExplorerType ViewType { get; set; } = ExplorerType.General;
+        private Bitmap wall = new Bitmap(1, 1);
+        public Bitmap Wallpaper { get { return wall; } set {wall = value; if (upDesk) RefreshImage("Wall"); } }
+        public ImageLayout WallpaperLayout { get { return wallMode; } set { wallMode = value; if (upDesk) RefreshImage("WallLayout"); } }
         private ImageLayout wallMode = ImageLayout.None;
     }
 }
