@@ -89,7 +89,14 @@ namespace libProChic
             StringFormat sf = new StringFormat();
             sf.Alignment = StringAlignment.Center;
             sf.LineAlignment = StringAlignment.Center;
-
+            TextAlign = (ContentAlignment)512;
+            Rectangle textRect = new Rectangle(1, 1, Width - 3, Height - 3);
+            if (TextImageRelation == TextImageRelation.ImageBeforeText)
+            {
+                textRect.X = 6 + Image.Width;
+                textRect.Width = Width - 6 - Image.Width;
+            }
+               // Console.WriteLine(TextAlign);
             sf.HotkeyPrefix = System.Drawing.Text.HotkeyPrefix.Show;
             // ImageAli
             if ((blnPressed && Enabled) || Held)
@@ -101,22 +108,24 @@ namespace libProChic
                     g.FillRectangle( new TextureBrush(AlphaTexture()),2,2, Width - 3, Height - 3);
                 else
                     g.FillRectangle(new SolidBrush(BackColor), new Rectangle(2, 2, Width - 3, Height - 3));
-                if (! (Image==null))
-                    g.DrawImage(Image, Convert.ToInt32((Width / (double)2) - (Image.Width / (double)2)), Convert.ToInt32((Height / (double)2) - Convert.ToInt32(Image.Height / (double)2)));
-                g.DrawString(Text, Font, new SolidBrush(ForeColor), new Rectangle(2, 2, Width - 3, Height - 3), sf);
+                textRect.Offset(1, 1);
+                g.DrawString(Text, Font, new SolidBrush(ForeColor), textRect, sf);
             }
             else
             {
                 g.FillRectangle(Brushes.Black, new Rectangle(0, 0, Width, Height));
                 g.FillRectangle(new SolidBrush(colLightBorder), new Rectangle(0, 0, Width - 1, Height - 1));
                 g.FillRectangle(new SolidBrush(colDarkBorder), new Rectangle(1, 1, Width - 2, Height - 2));
-                g.FillRectangle(new SolidBrush(BackColor), new Rectangle(1, 1, Width - 3, Height - 3));
-                if (!(Image == null))
-                    g.DrawImage(Image, Convert.ToInt32((Width / (double)2) - (Image.Width / (double)2)), Convert.ToInt32((Height / (double)2) - Convert.ToInt32(Image.Height / (double)2)));
+                g.FillRectangle(new SolidBrush(BackColor), new Rectangle(1, 1, Width - 3, Height - 3));                
                 if ((Enabled))
-                    g.DrawString(Text, Font, new SolidBrush(ForeColor), new Rectangle(1, 1, Width - 3, Height - 3), sf);
+                    g.DrawString(Text, Font, new SolidBrush(ForeColor), textRect, sf);
                 else
-                    g.DrawString(Text, Font, new SolidBrush(colDarkBorder), new Rectangle(1, 1, Width - 3, Height - 3), sf);
+                    g.DrawString(Text, Font, new SolidBrush(colDarkBorder), textRect, sf);
+            }
+            if (!(Image == null))
+            {
+                if (TextImageRelation == TextImageRelation.Overlay) g.DrawImage(Image, Convert.ToInt32((Width / (double)2) - (Image.Width / (double)2)), Convert.ToInt32((Height / (double)2) - Convert.ToInt32(Image.Height / (double)2)));
+                if (TextImageRelation == TextImageRelation.ImageBeforeText) g.DrawImage(Image, 2, Convert.ToInt32((Height / (double)2) - Convert.ToInt32(Image.Height / (double)2)));
             }
             if ((ShowFocusRectangle && Enabled && Focused))
                 g.DrawRectangle(new Pen(Color.Black, 1) { DashPattern = new[] { 1f, 1f } }, new Rectangle(3, 3, Width - 7, Height - 7));
@@ -139,7 +148,7 @@ namespace libProChic
                 return FlatStyle.Flat;
             }
         }
-        public new TextImageRelation TextImageRelation { get; } = TextImageRelation.Overlay;
+        public new TextImageRelation TextImageRelation { get; set; } = TextImageRelation.Overlay;
         public bool HoldOnPush { get; set; } = false;
         public bool ShowFocusRectangle { get; set; } = true;
         public bool Held
