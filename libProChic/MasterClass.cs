@@ -54,8 +54,8 @@ namespace libProChic
                 return bmp;
         }
         private Image prepareImage(Bitmap bmp)
-        {          
-            return Process(bmp, Color.AliceBlue);
+        {
+            return Process(bmp, Color.Transparent);
         }
         public Image prepareImage(string imageLocation)
         {
@@ -65,7 +65,8 @@ namespace libProChic
             BinaryReader Reader = new BinaryReader(fs);
             Bitmap bmpStream = new Bitmap(new MemoryStream(Reader.ReadBytes(System.Convert.ToInt32(fs.Length))));//System.Drawing.Image.FromStream(ImageStream));
             Bitmap bmp = bmpStream.Clone(new Rectangle(0, 0, bmpStream.Width, bmpStream.Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb); // , col As Color, intBiPerPixel As Integer = 16 'FROM https://stackoverflow.com/questions/29585959/how-to-release-picture-from-picturebox-so-picture-file-may-be-deleted-in-vb-net and https://www.translatetheweb.com/?ref=TVert&from=&to=en&a=https://dotnet.currifex.org/dotnet/code/graphics/#ImageNoLock                                                                                                                                                     // Dim myEncoderParameters As EncoderParameters = New EncoderParameters(1), memoryStream = New MemoryStream()
-            Reader.Close();          
+            Reader.Close();
+            bmp.MakeTransparent();
             return prepareImage(bmp); // Image.FromStream(memoryStream)
         }
         public Color FindClosestFromPallet(Color col)
@@ -110,10 +111,10 @@ namespace libProChic
             long b = System.Convert.ToInt64(e1.B) - System.Convert.ToInt64(e2.B);
             return Math.Sqrt((((512 + rmean) * r * r) >> 8) + 4 * g * g + (((767 - rmean) * b * b) >> 8));
         }
-        public Bitmap Process(System.Drawing.Bitmap bmp){
+        private Bitmap Process(System.Drawing.Bitmap bmp){
             return Process(bmp, Color.Transparent);
         }
-        public Bitmap Process(System.Drawing.Bitmap bmp,  Color alpha){
+        private Bitmap Process(System.Drawing.Bitmap bmp,  Color alpha){
             if ((bmp.PixelFormat != PixelFormat.Format24bppRgb && bmp.PixelFormat != PixelFormat.Format32bppArgb) || (bmp.Width < 1 || bmp.Height < 1)){ // <== A1
                 return null;
             }
@@ -143,14 +144,11 @@ namespace libProChic
         }
         private Dictionary<Color, Color> colourMap = new Dictionary<Color, Color>();
         private Color FindClosestFromPallet(Color col, Color AlphaColor){
-            if (colourMap.ContainsKey(col))
-            {
-                return colourMap[col];
-            }
+            if (AlphaColor.IsEmpty && col.A < 200) return col;
+            else if (col.A < 200) return AlphaColor;
+            if (colourMap.ContainsKey(col))  return colourMap[col];
             Color closeColour = col;
             Double closeNum = Double.MaxValue;
-            if (AlphaColor.IsEmpty && col.A < 200) return closeColour;
-            else if (col.A < 200) return AlphaColor;
             foreach (Color colPal in colPallette){
                 Double testDistance = ColourDistance(col, colPal);
                 if (testDistance <= closeNum){
