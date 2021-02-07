@@ -8,7 +8,7 @@ namespace libProChic
   public  class ConfigHelper
     {
         private List<ConfigGroup> winINI =new List<ConfigGroup>();            //Variable that will hold each config line
-        private String fileLocation = "";         //File Location of the Config File        
+        private String fileLoc = "";         //File Location of the Config File        
         public ConfigHelper(string fileName){
             try
             {
@@ -16,7 +16,7 @@ namespace libProChic
             }catch{
                 throw new Exception("File can't be created");       //Errors out if folder isn't created or doesn't have permissions
             }
-            fileLocation = fileName;            //If does then Saves the config file location
+            fileLoc = fileName;            //If does then Saves the config file location
          //  Console.WriteLine(Path.GetDirectoryName(fileName));
              updateConfig();     //Adds contents of config to WinINI
            FileSystemWatcher fsw = new FileSystemWatcher(Path.GetDirectoryName(fileName));        //Creates FileWatcher to update file as needed
@@ -45,7 +45,7 @@ namespace libProChic
             return line.ToArray();
         }
         private void updateConfig(){
-            String[] fil = ReadAllLines(fileLocation);     //Reads config file and places it in String varible fil
+            String[] fil = ReadAllLines(fileLoc);     //Reads config file and places it in String varible fil
             winINI.Clear();     //Clears any items that are currently in the list
             for (int i = 0; i <= fil.Length - 1; i++)      //Loops through each line of the fil
             {
@@ -53,7 +53,7 @@ namespace libProChic
                 {     //Checks to see if line is a group header                    
                     ConfigGroup grp = new ConfigGroup(fil[i], i);       //Creates a new group and sets the name and index of header
                     i++;    //Increments down to first line in group
-                    for(bool b=false; fil[i] != "" || i >= fil.Length;){      //Loops through each config in group, need for loop for pretest loop, j won't be used, but is needed for the loop  Loops through till blank line or end of array                    
+                    for(bool b=false; i < fil.Length && fil[i] != "";){      //Loops through each config in group, need for loop for pretest loop, j won't be used, but is needed for the loop  Loops through till blank line or end of array                    
                         grp.Add(new Config(fil[i]));    //Creates config out of line and adds it to grp
                         i++;        //Increments to next line of String
                     }
@@ -66,7 +66,7 @@ namespace libProChic
         public ConfigGroup GetConfigGroup(string group2Find){
             foreach(ConfigGroup grp in winINI){     //Loops through each ConfigGroup
                // Console.WriteLine(grp.Name);
-                if (grp.Name == group2Find) return grp;     //If the group name matches the one being searched  for then return it
+                if (grp.Name.Equals(group2Find,StringComparison.CurrentCultureIgnoreCase)) return grp;     //If the group name matches the one being searched  for then return it
             }
             Console.WriteLine(group2Find);
             return new ConfigGroup("Empty");        //If the group was not found then return an empty Config Group
@@ -86,9 +86,10 @@ namespace libProChic
         public void AddGroup(String groupName){
             winINI.Add(new ConfigGroup(groupName)); //Adds new Config Group and adds it to winINI
         }
+        public String FileLocation { get { return fileLoc; } }
         private Boolean FileChanged{
             set{
-                File.WriteAllText(fileLocation, prepareFile());
+                File.WriteAllText(fileLoc, prepareFile());
             }
         }
         public void SetConfig(String group, String configName, String newValue){
@@ -137,6 +138,12 @@ namespace libProChic
             // Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public void MoveFile(String newLocation)
+        {
+            File.Move(fileLoc, newLocation);
+            fileLoc = newLocation;
         }
     }
     public class Config
