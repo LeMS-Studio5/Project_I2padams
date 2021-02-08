@@ -43,7 +43,7 @@ namespace libProChic
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        public ImageAlbum Images { get; set; } = new ImageAlbum();
+        public ImageAlbum Images { get; } = new ImageAlbum();
     }
     public class ImageAlbum 
     {
