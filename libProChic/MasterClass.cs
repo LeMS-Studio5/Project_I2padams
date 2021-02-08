@@ -103,12 +103,12 @@ namespace libProChic
             // MessageBox.Show(closeColour.ToString)
             return closeColour;
         }
-        private double ColourDistance(Color e1, Color e2)
+        public double ColourDistance(Color colOne, Color colTwo)
         {
-            long rmean = Convert.ToInt64((System.Convert.ToInt64(e1.R) + System.Convert.ToInt64(e2.R)) / (double)2);
-            long r = System.Convert.ToInt64(e1.R) - System.Convert.ToInt64(e2.R);
-            long g = System.Convert.ToInt64(e1.G) - System.Convert.ToInt64(e2.G);
-            long b = System.Convert.ToInt64(e1.B) - System.Convert.ToInt64(e2.B);
+            long rmean = Convert.ToInt64((System.Convert.ToInt64(colOne.R) + System.Convert.ToInt64(colTwo.R)) / (double)2);
+            long r = System.Convert.ToInt64(colOne.R) - System.Convert.ToInt64(colTwo.R);
+            long g = System.Convert.ToInt64(colOne.G) - System.Convert.ToInt64(colTwo.G);
+            long b = System.Convert.ToInt64(colOne.B) - System.Convert.ToInt64(colTwo.B);
             return Math.Sqrt((((512 + rmean) * r * r) >> 8) + 4 * g * g + (((767 - rmean) * b * b) >> 8));
         }
         private Bitmap Process(System.Drawing.Bitmap bmp){
