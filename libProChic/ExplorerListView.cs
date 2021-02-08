@@ -214,6 +214,24 @@ namespace libProChic
             }
         }
         public Boolean FollowPallet { get; set; }
+        private ConfigHelper foldOptions;
+        public String FormatFileName(String filePath)
+        {
+            if (File.Exists(filePath))
+            {
+                if (ViewType == ExplorerType.ControlPanel)
+                    return System.Diagnostics.FileVersionInfo.GetVersionInfo(filePath).ProductName;
+                else
+                {
+                   if (Boolean.Parse(foldOptions.GetConfig("View", "HideDosExt").Setting)) return System.IO.Path.GetFileName(filePath); else return System.IO.Path.GetFileNameWithoutExtension(filePath);
+                }
+            }
+            else if (System.IO.Directory.Exists(filePath))
+            {
+                return Path.GetDirectoryName(filePath).Replace("‰", ":").Replace("ƒ", @"\");
+            }
+            throw new Exception("File or Directory could not be found");
+        }
         private void fswExplorer_Changed(object sender, FileSystemEventArgs e)
         {
             if (!System.IO.Directory.Exists(dir) && AutoDispose)
@@ -226,6 +244,7 @@ namespace libProChic
         }
         public ExplorerListView() : base()    // fswExplorer.CloseFile = m.specialRequest("Communcations", "closeEFSW" & Now.ToShortDateString) & "\close.U95"
         {
+            foldOptions = new ConfigHelper(com.toSystemPath(com.Config.GetConfig("Explorer", "ConfigLoc").Setting));
         }
         public bool OnErrorGoToParentDirectory { get; set; } = false;
         private Icon[] OSIco;
@@ -290,7 +309,7 @@ namespace libProChic
                                     // if (System.Security.SecurityManager.IsGranted(new System.Security.Permissions.FileIOPermission(System.Security.Permissions.FileIOPermissionAccess.Read, SizeFile)))
                                     intTotal += (new FileInfo(SizeFile)).Length;
                                 }
-                                Items.Add(fil.Substring(fil.LastIndexOf('\\') + 1).Replace("‰", ":").Replace("ƒ", @"\"), fil); // Add Files & File Properties To ListView
+                                Items.Add(FormatFileName(fil), fil); // Add Files & File Properties To ListView
                                 Items[Items.Count - 1].ImageKey = fil;
                                 Items[Items.Count - 1].ImageIndex = Items.Count - 1;
                                 Items[Items.Count - 1].SubItems.Add((intTotal / FileSizeType.GetHashCode()) + " " + FileSizeType.ToString());
@@ -321,11 +340,8 @@ namespace libProChic
                                 SmallImageList.Images.Add(fil, addImage(fil, dir));
                                 // iltDesktopIcons.Images.Add(addImage(file, activeDir))
                                 // AddImages(file, iltDesktopIcons) 'Add Icons
-                                // If Not File.Exists(fil) Then Exit For                            
-                                if (ViewType == ExplorerType.ControlPanel)
-                                    Items.Add(System.Diagnostics.FileVersionInfo.GetVersionInfo(fil).ProductName, fil);
-                                else
-                                    Items.Add(System.IO.Path.GetFileName(fil), fil); // 'MyItems.Add(fil.Substring(fil.LastIndexOf("\"c) + 1), fil.ToString()) 'Add Files & File Properties To ListView     Add Files & File Properties To ListView 
+                                // If Not File.Exists(fil) Then Exit For    
+                                Items.Add(FormatFileName(fil), fil);//'Add Files & File Properties To ListView     Add Files & File Properties To ListView 
                                 Items[Items.Count - 1].SubItems.Add(((new FileInfo(fil)).Length / FileSizeType.GetHashCode()) + " " + FileSizeType.ToString());
                                 Items[Items.Count - 1].Tag = fil;
                                 Items[Items.Count - 1].ImageKey = fil;
@@ -448,6 +464,7 @@ namespace libProChic
         ConfigHelper conLNK;
         public ShortCut(String lnkLocation)
         {
+            if (!File.Exists(lnkLocation)) return;
             Shell32.FolderItem fil = (new Shell32.Shell()).NameSpace(Path.GetDirectoryName(lnkLocation)).Items().Item(Path.GetFileName(lnkLocation));
          // if (fil.IsLink)
          // {
