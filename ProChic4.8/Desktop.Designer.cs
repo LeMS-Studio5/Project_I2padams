@@ -28,14 +28,40 @@
         /// </summary>
         private void InitializeComponent()
         {
-            libProChic.ImageList imageList1 = new libProChic.ImageList();
-            libProChic.ImageAlbum imageAlbum1 = new libProChic.ImageAlbum();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Desktop));
-            libProChic.ImageList imageList2 = new libProChic.ImageList();
-            libProChic.ImageAlbum imageAlbum2 = new libProChic.ImageAlbum();
-            this.elvDesktop = new libProChic.ExplorerListView();
             this.panTaskBar = new System.Windows.Forms.Panel();
+            this.btnAppLauncher = new libProChic.Button();
+            this.elvDesktop = new libProChic.ExplorerListView();
+            this.panAppLaunch = new System.Windows.Forms.Panel();
+            this.menAppLaunch = new System.Windows.Forms.MenuStrip();
+            this.panTaskBar.SuspendLayout();
+            this.panAppLaunch.SuspendLayout();
+            this.menAppLaunch.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // panTaskBar
+            // 
+            this.panTaskBar.Controls.Add(this.btnAppLauncher);
+            this.panTaskBar.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panTaskBar.Location = new System.Drawing.Point(0, 380);
+            this.panTaskBar.Name = "panTaskBar";
+            this.panTaskBar.Size = new System.Drawing.Size(640, 100);
+            this.panTaskBar.TabIndex = 1;
+            // 
+            // btnAppLauncher
+            // 
+            this.btnAppLauncher.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            this.btnAppLauncher.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAppLauncher.Held = false;
+            this.btnAppLauncher.HoldOnPush = false;
+            this.btnAppLauncher.Location = new System.Drawing.Point(155, 55);
+            this.btnAppLauncher.Name = "btnAppLauncher";
+            this.btnAppLauncher.ShowFocusRectangle = true;
+            this.btnAppLauncher.Size = new System.Drawing.Size(75, 23);
+            this.btnAppLauncher.TabIndex = 2;
+            this.btnAppLauncher.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.btnAppLauncher.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.btnAppLauncher.UseVisualStyleBackColor = false;
             // 
             // elvDesktop
             // 
@@ -51,8 +77,6 @@
             this.elvDesktop.FollowPallet = true;
             this.elvDesktop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.elvDesktop.GridLines = true;
-            imageList1.Images = imageAlbum1;
-            this.elvDesktop.LargeImageList = imageList1;
             this.elvDesktop.Location = new System.Drawing.Point(0, 0);
             this.elvDesktop.Name = "elvDesktop";
             this.elvDesktop.OnErrorGoToParentDirectory = false;
@@ -60,11 +84,7 @@
             this.elvDesktop.OwnerDraw = true;
             this.elvDesktop.Pattern = ((System.Drawing.Bitmap)(resources.GetObject("elvDesktop.Pattern")));
             this.elvDesktop.Root = "C:\\";
-            this.elvDesktop.SelectedColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(128)))));
-            this.elvDesktop.SelectedTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
             this.elvDesktop.Size = new System.Drawing.Size(640, 480);
-            imageList2.Images = imageAlbum2;
-            this.elvDesktop.SmallImageList = imageList2;
             this.elvDesktop.TabIndex = 0;
             this.elvDesktop.UpdateDesktop = false;
             this.elvDesktop.UseCompatibleStateImageBehavior = false;
@@ -73,13 +93,24 @@
             this.elvDesktop.Wallpaper = ((System.Drawing.Bitmap)(resources.GetObject("elvDesktop.Wallpaper")));
             this.elvDesktop.WallpaperLayout = System.Windows.Forms.ImageLayout.None;
             // 
-            // panTaskBar
+            // panAppLaunch
             // 
-            this.panTaskBar.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panTaskBar.Location = new System.Drawing.Point(0, 380);
-            this.panTaskBar.Name = "panTaskBar";
-            this.panTaskBar.Size = new System.Drawing.Size(640, 100);
-            this.panTaskBar.TabIndex = 1;
+            this.panAppLaunch.AutoSize = false;
+            this.panAppLaunch.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.panAppLaunch.Controls.Add(this.menAppLaunch);
+            this.panAppLaunch.Location = new System.Drawing.Point(0, 195);
+            this.panAppLaunch.Name = "panAppLaunch";
+            this.panAppLaunch.Size = new System.Drawing.Size(193, 179);
+            this.panAppLaunch.TabIndex = 2;
+            // 
+            // menAppLaunch
+            // 
+            this.menAppLaunch.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.VerticalStackWithOverflow;
+            this.menAppLaunch.Location = new System.Drawing.Point(0, 0);
+            this.menAppLaunch.Name = "menAppLaunch";
+            this.menAppLaunch.Size = new System.Drawing.Size(193, 44);
+            this.menAppLaunch.TabIndex = 0;
+            this.menAppLaunch.Text = "menAppLaunch";
             // 
             // Desktop
             // 
@@ -87,12 +118,19 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(640, 480);
             this.ControlBox = false;
+            this.Controls.Add(this.panAppLaunch);
             this.Controls.Add(this.panTaskBar);
             this.Controls.Add(this.elvDesktop);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.MainMenuStrip = this.menAppLaunch;
             this.Name = "Desktop";
             this.Text = "Form1";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            this.panTaskBar.ResumeLayout(false);
+            this.panAppLaunch.ResumeLayout(false);
+            this.panAppLaunch.PerformLayout();
+            this.menAppLaunch.ResumeLayout(false);
+            this.menAppLaunch.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -101,6 +139,9 @@
 
         private libProChic.ExplorerListView elvDesktop;
         private System.Windows.Forms.Panel panTaskBar;
+        private libProChic.Button btnAppLauncher;
+        private System.Windows.Forms.Panel panAppLaunch;
+        private System.Windows.Forms.MenuStrip menAppLaunch;
     }
 }
 

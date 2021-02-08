@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using libProChic;
+using System.IO;
 
 namespace ProChic4._8
 {
@@ -29,7 +30,6 @@ namespace ProChic4._8
                 Console.WriteLine(ex.ToString());
             }
             elvDesktop.OSIconLocationPath = com.toSystemPath(com.Config.GetConfig("windows", "ICO").Setting);
-            elvDesktop.BackColor = com.convertColour(com.Config.GetConfig("Colors", "Background").Setting);
             elvDesktop.Directory = com.toSystemPath(@"C:\Windows\Desktop");
         }
         public void DesktopLoad(Object sender, EventArgs e)
@@ -38,8 +38,10 @@ namespace ProChic4._8
             {
                 elvDesktop.UpdateDesktop = false;
                 if (com.Config.GetConfig("Desktop", "TileWallpaper").Setting == "1") elvDesktop.WallpaperLayout = ImageLayout.Tile; else elvDesktop.WallpaperLayout = ImageLayout.Center;
-                elvDesktop.Wallpaper = (Bitmap)com.prepareImage(com.toSystemPath(com.Config.GetConfig("Desktop", "Wallpaper").Setting));
+                elvDesktop.BackColor = com.convertColour(com.Config.GetConfig("Colors", "Background").Setting);
+                //elvDesktop.Wallpaper = (Bitmap)com.prepareImage(com.toSystemPath(com.Config.GetConfig("Desktop", "Wallpaper").Setting));
                 elvDesktop.Pattern = new Bitmap(getPattern(com.Config.GetConfig("Desktop", "Pattern").Setting), 8, 8);
+                elvDesktop.UpdateDesktop = true;
                 int taskWidth=int.Parse(com.Config.GetConfig("Taskbar", "Width").Setting), taskHeight= int.Parse(com.Config.GetConfig("Taskbar", "Height").Setting);
                 panTaskBar.Height= taskHeight;
                 if (taskWidth == -1)
@@ -51,13 +53,21 @@ namespace ProChic4._8
                     panTaskBar.Width = taskWidth;
                 }
                 panTaskBar.Location = new Point((int)((Width/(Double)2)-(taskWidth/(Double)2)), Height - taskHeight);
-                elvDesktop.UpdateDesktop = true;
+                btnAppLauncher.Location = new Point(int.Parse(com.Config.GetConfig("AppLauncher", "X").Setting), int.Parse(com.Config.GetConfig("AppLauncher", "Y").Setting));
+                btnAppLauncher.Size = new Size(int.Parse(com.Config.GetConfig("AppLauncher", "Width").Setting), int.Parse(com.Config.GetConfig("AppLauncher", "Height").Setting));
+                btnAppLauncher.Image = com.prepareImage(com.toSystemPath(com.Config.GetConfig("AppLauncher", "ButtonImage").Setting));
+                btnAppLauncher.Text = com.Config.GetConfig("AppLauncher", "ButtonText").Setting;
+                menAppLaunch.Items.Clear();
+                menAppLaunch.Items.Add(BuildMenuFromPathData(com.toSystemPath(@"C:\Windows\Start Menu\Programs")));
+                panAppLaunch.Size = new Size(panAppLaunch.Width, menAppLaunch.Height);
+                Console.WriteLine(panAppLaunch.Size);
+                panAppLaunch.Location = new Point(int.Parse(com.Config.GetConfig("AppLauncher", "X").Setting), panTaskBar.Location.Y - panAppLaunch.Height);
             }
             catch (Exception ex){
                 Console.WriteLine(ex.ToString());
             }
         }
-        public Image getPattern(string patternString)
+            public Image getPattern(string patternString)
         {
             int y = 0;
             System.Drawing.Bitmap canvasbitmap = new System.Drawing.Bitmap(152, 152);
@@ -76,6 +86,66 @@ namespace ProChic4._8
                 y += 1;
             }
             return canvasbitmap;
+        }   
+            public ToolStripMenuItem BuildMenuFromPathData(String RootPath)
+            {
+                try
+                {
+                ToolStripMenuItem tsmi = new ToolStripMenuItem(new DirectoryInfo(RootPath).Name,elvDesktop.addImage(RootPath,RootPath));
+                foreach(DirectoryInfo dirInfo in ListDirs(RootPath))
+                {
+                    //Console.WriteLine(dirInfo.FullName);
+                    tsmi.DropDownItems.Add(BuildMenuFromPathData(dirInfo.FullName));
+                }
+                foreach (FileInfo filInfo in ListFiles(RootPath))
+                {
+                    tsmi.DropDownItems.Add(CreateToolStripFileItem(filInfo));
+                }
+                return tsmi;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    return null;
+                }
+            }
+            private ToolStripMenuItem CreateToolStripFileItem(FileInfo ItemText)
+            {
+            ToolStripMenuItem tsi= new ToolStripMenuItem(Path.GetFileNameWithoutExtension(ItemText.FullName),elvDesktop.addImage(ItemText.FullName,ItemText.FullName),launch);
+            tsi.Tag = ItemText.FullName;
+            return tsi;
+            }
+            private DirectoryInfo[] ListDirs(String Path)
+            {
+                try
+                {
+                    if (Directory.Exists(Path))
+                        return new System.IO.DirectoryInfo(Path).GetDirectories("*.*", System.IO.SearchOption.TopDirectoryOnly);
+                    else
+                        return null;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    return null;
+                }
+            }
+            private FileInfo[] ListFiles(String Path)
+            {
+                try // MessageBox.Show(Path)
+                {
+                    if (Path != null && Directory.Exists(Path))
+                        return new DirectoryInfo(Path).GetFiles("*.*", System.IO.SearchOption.TopDirectoryOnly);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+                return null;
+            }
+        private void launch(Object sender, EventArgs e)
+        {
+
+        }
         }
     }
-}
