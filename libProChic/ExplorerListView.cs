@@ -38,20 +38,23 @@ namespace libProChic
                                                           // MessageBox.Show(strPath & vbCrLf & (m.getRoot(2359))) ' & "WINDOWS\Start Menu\Programs\")) 'IO.Directory.Exists
                                                           // MessageBox.Show(File.Exists(strPath))
                                                           // MessageBox.Show(File.ReadAllLines(strPath).First)
-                    if (File.ReadAllLines(strPath).Count() >= 4 && File.Exists(com.toSystemPath(System.IO.File.ReadAllLines(strPath)[3].Split('☼')[0])))
-                        // Console.WriteLine(File.Exists("C:\Users\Luke\Documents\Visual Studio 2015\GitHub\LeMS-Studio5\ProjectChicago\win 95.ico")) 'm.toSystemPath(File.ReadAllLines(strPath)(3).Split("☼"c)(0)))) 'Console.WriteLine(m.toSystemPath("$" & File.ReadAllLines(strPath)(3)))
-                        // Console.WriteLine(New IconExtractor("C:\Users\Luke\Documents\Visual Studio 2015\GitHub\LeMS-Studio5\ProjectChicago\win 95.ico").Count)
-                        // strPath = File.ReadAllLines(strPath)(3).Split("☼"c)(0)
-                        ink = TsudaKageyu.IconUtil.Split(new Icon(com.toSystemPath(File.ReadAllLines(strPath)[3].Split('☼')[0])))[int.Parse(File.ReadAllLines(strPath)[3].Split('☼')[1])].ToBitmap(); // ink = (New IconExtractor(m.toSystemPath(File.ReadAllLines(strPath)(3).Split("☼"c)(0)))).GetIcon(File.ReadAllLines(strPath)(3).Split("☼"c)(1)).ToBitmap
-                    else if (File.Exists(File.ReadAllLines(strPath).First()))
-                        strPath = File.ReadAllLines(strPath).First();
-                    else
-                        // MessageBox.Show("g")
-                        strPath = com.toSystemPath(@"C:\") + File.ReadAllLines(strPath).First().ToCharArray();
-                    // MessageBox.Show(strPath & ", " & File.Exists(strPath))
-                    // If File.ReadAllLines(strFilPath).Count >= 5 Then Console.WriteLine(strFilPath & ((File.ReadAllLines(strFilPath)(4)))) ' = "Sys")))
+                    ShortCut lnk = new ShortCut(strPath);
+                   // if (File.Exists(shortData[0])) strPath = shortData[0]; else Console.WriteLine(shortData[0]);
+                    //        Console.WriteLine(com.toSystemPath(System.IO.File.ReadAllLines(strPath)[3].Split('☼')[0]));
+                    //    if (File.ReadAllLines(strPath).Count() >= 4 && File.Exists(com.toSystemPath(System.IO.File.ReadAllLines(strPath)[3].Split('☼')[0])))
+                    //        // Console.WriteLine(File.Exists("C:\Users\Luke\Documents\Visual Studio 2015\GitHub\LeMS-Studio5\ProjectChicago\win 95.ico")) 'm.toSystemPath(File.ReadAllLines(strPath)(3).Split("☼"c)(0)))) 'Console.WriteLine(m.toSystemPath("$" & File.ReadAllLines(strPath)(3)))
+                    //        // Console.WriteLine(New IconExtractor("C:\Users\Luke\Documents\Visual Studio 2015\GitHub\LeMS-Studio5\ProjectChicago\win 95.ico").Count)
+                    //        // strPath = File.ReadAllLines(strPath)(3).Split("☼"c)(0)
+                    //        ink = TsudaKageyu.IconUtil.Split(new Icon(com.toSystemPath(File.ReadAllLines(strPath)[3].Split('☼')[0])))[int.Parse(File.ReadAllLines(strPath)[3].Split('☼')[1])].ToBitmap(); // ink = (New IconExtractor(m.toSystemPath(File.ReadAllLines(strPath)(3).Split("☼"c)(0)))).GetIcon(File.ReadAllLines(strPath)(3).Split("☼"c)(1)).ToBitmap
+                    //    else if (File.Exists(File.ReadAllLines(strPath).First()))
+                    //        strPath = File.ReadAllLines(strPath).First();
+                    //    else
+                    //        // MessageBox.Show("g")
+                    //        strPath = com.toSystemPath(@"C:\") + File.ReadAllLines(strPath).First().ToCharArray();
+                    //    // MessageBox.Show(strPath & ", " & File.Exists(strPath))
+                    //    // If File.ReadAllLines(strFilPath).Count >= 5 Then Console.WriteLine(strFilPath & ((File.ReadAllLines(strFilPath)(4)))) ' = "Sys")))
                     if (ink.Width + ink.Height == 2)
-                        ink = new Bitmap(addImage(strPath, ""), 32, 32);
+                        ink = new Bitmap(addImage(com.toSystemPath(lnk.TargetFile), ""), 32, 32);
                     if (!(File.ReadAllLines(strFilPath).Count() >= 5 && File.ReadAllLines(strFilPath)[4] == "Sys"))
                         g.DrawImage(OSIco[29].ToBitmap(), 0, ink.Height - OSIco[29].Height);  // ink.Height - OSIco(29).Height)
                                                                                               // If Not strFilPath.StartsWith(m.getRoot(2359) & "WINDOWS\Start Menu\Programs\", StringComparison.CurrentCultureIgnoreCase) Then g.DrawImage(OSIco(29).ToBitmap, 0, ink.Height - OSIco(29).Height)  'ink.Height - OSIco(29).Height)
@@ -270,7 +273,7 @@ namespace libProChic
                     {
                         foreach (string fil in System.IO.Directory.GetDirectories(dir)) // Get Files In Folder
                         {
-                            Console.WriteLine(fil);
+                           
                             try
                             {
                                 //   System.Security.Permissions.FileIOPermission writePermission = new System.Security.Permissions.FileIOPermission(System.Security.Permissions.FileIOPermissionAccess.Read, fil);
@@ -310,7 +313,7 @@ namespace libProChic
                     {
                         foreach (string fil in System.IO.Directory.GetFiles(dir, filt)) // Get Files In Folder
                         {
-                            Console.WriteLine(fil);
+                           
                             if (fil != null && !System.IO.Path.GetFileName(fil).StartsWith("(_)"))
                             {
                                 // If  Then GoTo n    ' MessageBox.Show(file)
@@ -439,5 +442,80 @@ namespace libProChic
         public Bitmap Wallpaper { get { return wall; } set {wall = value; if (upDesk) RefreshImage("Wall"); } }
         public ImageLayout WallpaperLayout { get { return wallMode; } set { wallMode = value; if (upDesk) RefreshImage("WallLayout"); } }
         private ImageLayout wallMode = ImageLayout.None;
+    }
+    public class ShortCut {  //http://csharphelper.com/blog/2018/06/get-information-about-windows-shortcuts-in-c/
+        Shell32.ShellLinkObject lnk;
+        ConfigHelper conLNK;
+        public ShortCut(String lnkLocation)
+        {
+            Shell32.FolderItem fil = (new Shell32.Shell()).NameSpace(Path.GetDirectoryName(lnkLocation)).Items().Item(Path.GetFileName(lnkLocation));
+         // if (fil.IsLink)
+         // {
+         //     Console.WriteLine(lnkLocation);
+         //     lnk = (Shell32.ShellLinkObject)fil.GetLink;
+         //     lType = lnkType.Windows;
+         //
+         // }else
+            {
+                conLNK = new ConfigHelper(lnkLocation);
+                lType = lnkType.ProjectI2padams;
+            }
+        }
+        public String TargetFile {
+            set {
+                if (lType == lnkType.Windows) { lnk.Path = value; Save(); } else conLNK.SetConfig("Shortcut","Target",value);
+
+            } get {
+                if (lType == lnkType.Windows) return lnk.Path; else return conLNK.GetConfig("Shortcut", "Target").Setting;
+            } }
+        public void Save()
+        {
+          if (lType==lnkType.Windows)  lnk.Save();
+        }
+        private lnkType lType;
+        public enum lnkType
+        {
+            Windows,ProjectI2padams
+        }
+        public lnkType ShortcutType { get { return lType; } }
+        private void GetShortcutInfo(String full_name)
+        {
+        //    name = "";
+        //    path = "";
+        //    descr = "";
+        //    working_dir = "";
+        //    args = "";
+            try
+            {
+                // Make a Shell object.
+                Shell32.Shell shell = new Shell32.Shell();
+
+                // Get the shortcut's folder and name.
+                //     string shortcut_path = full_name.Substring(0, full_name.LastIndexOf("\\"));
+                String shortcut_name = Path.GetFileName(full_name);
+          //     if (!shortcut_name.EndsWith(".lnk"))  shortcut_name += ".lnk";
+
+                // Get the shortcut's folder.
+                //Shell32.Folder shortcut_folder =     shell.NameSpace(shortcut_path);
+                // Get the shortcut's file.
+             //   Shell32.FolderItem folder_item = shortcut_folder.Items().Item(shortcut_name);
+
+          //     if (folder_item == null)  return "Cannot find shortcut file '" + full_name + "'";
+          //     if (!folder_item.IsLink)  return "File '" + full_name + "' isn't a shortcut.";
+
+                // Display the shortcut's information.
+                Console.WriteLine(lnk.Path);
+           //    name = folder_item.Name;
+           //    descr = lnk.Description;
+           //    path = lnk.Path;
+           //    working_dir = lnk.WorkingDirectory;
+           //    args = lnk.Arguments;
+           //     return "";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine( ex.Message);
+            }
+        }
     }
 }
