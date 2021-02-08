@@ -68,8 +68,7 @@ namespace libProChic
                // Console.WriteLine(grp.Name);
                 if (grp.Name.Equals(group2Find,StringComparison.CurrentCultureIgnoreCase)) return grp;     //If the group name matches the one being searched  for then return it
             }
-            Console.WriteLine(group2Find);
-            return new ConfigGroup("Empty");        //If the group was not found then return an empty Config Group
+            throw new Exception($"ConfigGroup: {group2Find} not Found");     //If the group was not found then throw exception
         }     
         public void RemoveGroup(string Group2Find){
             winINI.RemoveAt(GetConfigGroup(Group2Find).Index);
