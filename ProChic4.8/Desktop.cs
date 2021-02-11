@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using libProChic;
 using System.IO;
+using System.IO.Pipes;
 
 namespace ProChic4._8
 {
@@ -42,17 +43,18 @@ namespace ProChic4._8
                 //elvDesktop.Wallpaper = (Bitmap)com.prepareImage(com.toSystemPath(com.Config.GetConfig("Desktop", "Wallpaper").Setting));
                 elvDesktop.Pattern = new Bitmap(getPattern(com.Config.GetConfig("Desktop", "Pattern").Setting), 8, 8);
                 elvDesktop.UpdateDesktop = true;
-                int taskWidth=int.Parse(com.Config.GetConfig("Taskbar", "Width").Setting), taskHeight= int.Parse(com.Config.GetConfig("Taskbar", "Height").Setting);
-                panTaskBar.Height= taskHeight;
+                int taskWidth = int.Parse(com.Config.GetConfig("Taskbar", "Width").Setting), taskHeight = int.Parse(com.Config.GetConfig("Taskbar", "Height").Setting);
+                panTaskBar.Height = taskHeight;
                 if (taskWidth == -1)
                 {
                     panTaskBar.Dock = DockStyle.Bottom;
-                }else
+                }
+                else
                 {
                     panTaskBar.Dock = DockStyle.None;
                     panTaskBar.Width = taskWidth;
                 }
-                panTaskBar.Location = new Point((int)((Width/(Double)2)-(taskWidth/(Double)2)), Height - taskHeight);
+                panTaskBar.Location = new Point((int)((Width / (Double)2) - (taskWidth / (Double)2)), Height - taskHeight);
                 btnAppLauncher.Location = new Point(int.Parse(com.Config.GetConfig("AppLauncher", "X").Setting), int.Parse(com.Config.GetConfig("AppLauncher", "Y").Setting));
                 btnAppLauncher.Size = new Size(int.Parse(com.Config.GetConfig("AppLauncher", "Width").Setting), int.Parse(com.Config.GetConfig("AppLauncher", "Height").Setting));
                 btnAppLauncher.Image = com.prepareImage(com.toSystemPath(com.Config.GetConfig("AppLauncher", "ButtonImage").Setting));
@@ -62,12 +64,14 @@ namespace ProChic4._8
                 panAppLaunch.Size = new Size(panAppLaunch.Width, menAppLaunch.Height);
                 Console.WriteLine(panAppLaunch.Size);
                 panAppLaunch.Location = new Point(int.Parse(com.Config.GetConfig("AppLauncher", "X").Setting), panTaskBar.Location.Y - panAppLaunch.Height);
+                (new System.Threading.Thread(new System.Threading.ThreadStart(FileLaunch))).Start();
             }
-            catch (Exception ex){
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.ToString());
             }
         }
-            public Image getPattern(string patternString)
+        public Image getPattern(string patternString)
         {
             int y = 0;
             System.Drawing.Bitmap canvasbitmap = new System.Drawing.Bitmap(152, 152);
@@ -86,13 +90,13 @@ namespace ProChic4._8
                 y += 1;
             }
             return canvasbitmap;
-        }   
-            public ToolStripMenuItem BuildMenuFromPathData(String RootPath)
+        }
+        public ToolStripMenuItem BuildMenuFromPathData(String RootPath)
+        {
+            try
             {
-                try
-                {
-                ToolStripMenuItem tsmi = new ToolStripMenuItem(new DirectoryInfo(RootPath).Name,elvDesktop.addImage(RootPath,RootPath));
-                foreach(DirectoryInfo dirInfo in ListDirs(RootPath))
+                ToolStripMenuItem tsmi = new ToolStripMenuItem(new DirectoryInfo(RootPath).Name, elvDesktop.addImage(RootPath, RootPath));
+                foreach (DirectoryInfo dirInfo in ListDirs(RootPath))
                 {
                     //Console.WriteLine(dirInfo.FullName);
                     tsmi.DropDownItems.Add(BuildMenuFromPathData(dirInfo.FullName));
@@ -102,50 +106,77 @@ namespace ProChic4._8
                     tsmi.DropDownItems.Add(CreateToolStripFileItem(filInfo));
                 }
                 return tsmi;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                    return null;
-                }
             }
-            private ToolStripMenuItem CreateToolStripFileItem(FileInfo ItemText)
+            catch (Exception ex)
             {
-            ToolStripMenuItem tsi= new ToolStripMenuItem(Path.GetFileNameWithoutExtension(ItemText.FullName),elvDesktop.addImage(ItemText.FullName,ItemText.FullName),launch);
-            tsi.Tag = ItemText.FullName;
-            return tsi;
-            }
-            private DirectoryInfo[] ListDirs(String Path)
-            {
-                try
-                {
-                    if (Directory.Exists(Path))
-                        return new System.IO.DirectoryInfo(Path).GetDirectories("*.*", System.IO.SearchOption.TopDirectoryOnly);
-                    else
-                        return null;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                    return null;
-                }
-            }
-            private FileInfo[] ListFiles(String Path)
-            {
-                try // MessageBox.Show(Path)
-                {
-                    if (Path != null && Directory.Exists(Path))
-                        return new DirectoryInfo(Path).GetFiles("*.*", System.IO.SearchOption.TopDirectoryOnly);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                }
+                Console.WriteLine(ex.ToString());
                 return null;
             }
+        }
+        private ToolStripMenuItem CreateToolStripFileItem(FileInfo ItemText)
+        {
+            ToolStripMenuItem tsi = new ToolStripMenuItem(Path.GetFileNameWithoutExtension(ItemText.FullName), elvDesktop.addImage(ItemText.FullName, ItemText.FullName), launch);
+            tsi.Tag = ItemText.FullName;
+            return tsi;
+        }
+        private DirectoryInfo[] ListDirs(String Path)
+        {
+            try
+            {
+                if (Directory.Exists(Path))
+                    return new System.IO.DirectoryInfo(Path).GetDirectories("*.*", System.IO.SearchOption.TopDirectoryOnly);
+                else
+                    return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return null;
+            }
+        }
+        private FileInfo[] ListFiles(String Path)
+        {
+            try // MessageBox.Show(Path)
+            {
+                if (Path != null && Directory.Exists(Path))
+                    return new DirectoryInfo(Path).GetFiles("*.*", System.IO.SearchOption.TopDirectoryOnly);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            return null;
+        }
         private void launch(Object sender, EventArgs e)
         {
-
+            elvDesktop.OpenFile(((ToolStripMenuItem)sender).Tag.ToString());
         }
+        private void FileLaunch()
+        {
+                using (NamedPipeClientStream pipeClient = new NamedPipeClientStream("ProjectI2padamsNet"))
+                {
+                    if (!pipeClient.IsConnected) pipeClient.Connect();
+                    string temp = "";
+                    using (StreamReader sr = new StreamReader(pipeClient))
+                    {
+                    while (temp != "Exit")
+                    {
+                        while ((temp = sr.ReadLine()) == "")
+                        {
+
+                            Console.WriteLine(temp);
+
+                        }
+                        Console.WriteLine("Here");
+                        AppHolder app = new AppHolder(temp, "");
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            // Running on the UI thread
+                            elvDesktop.Controls.Add(app);
+                        });
+                    }
+                }
+            }
         }
     }
+}
