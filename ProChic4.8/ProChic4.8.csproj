@@ -52,6 +52,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppHolder.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="BIOS.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BIOS.Designer.cs">
+      <DependentUpon>BIOS.cs</DependentUpon>
+    </Compile>
     <Compile Include="Desktop.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -60,6 +69,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="BIOS.resx">
+      <DependentUpon>BIOS.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Desktop.resx">
       <DependentUpon>Desktop.cs</DependentUpon>
     </EmbeddedResource>
