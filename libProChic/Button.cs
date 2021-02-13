@@ -35,7 +35,8 @@ namespace libProChic
                 base.Paint += OnPaint;
                 base.MouseUp += Button_MouseUp;
                 base.MouseDown += Button_MouseDown;
-                base.MouseClick += Button_Click;
+                base.MouseClick += Button_MouseClick;
+                base.Click += Button_Click;
                 Invalidate();
             }
             catch (Exception ex)
@@ -58,14 +59,16 @@ namespace libProChic
             Invalidate();
             MouseUp?.Invoke(this, e);
         }
-        private void Button_Click(object sender, MouseEventArgs e)
+        private void Button_MouseClick(object sender, MouseEventArgs e)
         {
             if (blnPressed && (e.Button == MouseButtons.Left))
                 blnPressed = false;
             Invalidate();
-            Click(sender, new EventArgs());
             MouseClick(sender, e);
-           // MouseClick?.Invoke(this, e);
+        }
+        private void Button_Click(object sender, EventArgs e)
+        {
+            Click(sender, e);
         }
         private  void OnPaint(object sender, PaintEventArgs e)
         {
@@ -174,18 +177,9 @@ namespace libProChic
                 return blnHeld;
             }
         }
-        public new event MouseUpEventHandler MouseUp;
-
-        public  delegate void MouseUpEventHandler(object sender, MouseEventArgs e);
-
-        public new  event MouseClickEventHandler MouseClick = new MouseClickEventHandler((e, a) => { });
-
-        public  delegate void MouseClickEventHandler(object sender, MouseEventArgs e);
-
-        public new  event MouseDownEventHandler MouseDown;
-
-        public  delegate void MouseDownEventHandler(object sender, MouseEventArgs e);
-
+        public new event MouseEventHandler MouseUp;
+        public new event MouseEventHandler MouseClick = new MouseEventHandler((e, a) => { });
+        public new  event MouseEventHandler MouseDown;
         public new event EventHandler Click = new EventHandler((e, a) => { });
         
     }
