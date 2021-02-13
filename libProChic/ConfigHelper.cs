@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,9 +27,9 @@ namespace libProChic
         }
         private void fsw_Changed(object sender, FileSystemEventArgs e){
             updateConfig(); //When Config is updated externally, then update Config
-         if (ConfigUpdated !=null)   ConfigUpdated(sender, e);
+         if (ConfigUpdated !=null)   ConfigUpdated(sender, e);  //If possible raise ConfigUpdated so that other classes can update needed components
         }
-        public String[] ReadAllLines(String filepath)
+        public String[] ReadAllLines(String filepath)   //Method that reads a file even if another process is also reading it and returns it as an Array
         {
             FileStream logFileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             StreamReader logFileReader = new StreamReader(logFileStream);
@@ -36,10 +37,7 @@ namespace libProChic
             while (!logFileReader.EndOfStream)
             {
                 line.Add(logFileReader.ReadLine());
-                // Your code here
             }
-
-            // Clean up
             logFileReader.Close();
             logFileStream.Close();
             return line.ToArray();
@@ -173,24 +171,26 @@ namespace libProChic
             return SettingName + "=" + Setting;
         }
     }
-    public class ConfigGroup
+    public class ConfigGroup : IEnumerator, IEnumerable
     {
-        private int headerIndex = 0;
+        private int headerIndex = 0, pos=0;
         public String Name;
         public int Index { get; set; }
+        public object Current{
+            get{
+                return Configs[pos];
+            }
+        }
         private List<Config> Configs = new List<Config>();
-        public ConfigGroup(String groupName, int lineIndex):this(groupName)
-        {
+        public ConfigGroup(String groupName, int lineIndex):this(groupName){
             headerIndex = lineIndex;   
         }
-        public ConfigGroup(String groupName)
-        {
+        public ConfigGroup(String groupName){
             if (groupName.StartsWith("[")) groupName = groupName.Substring(1);
             if (groupName.EndsWith("]")) groupName=groupName.Substring(0,groupName.Length-1);
             Name = groupName;
         }
-        public int Contains(String settingName)
-        {
+        public int Contains(String settingName){
             foreach(Config con in Configs) {      //Loops through each config in group
                 if (con.SettingName == settingName){        //If config name matches the one being searched for
                     return con.Index;           //then the config's index is returned
@@ -198,14 +198,12 @@ namespace libProChic
             }
             return -1;      //If Setting's name can't be found then -1 is retuned
         }
-        public void Add(Config cfg)
-        {
+        public void Add(Config cfg){
             if (cfg.Index == -1) cfg.Index = Configs.Count;
             Configs.Add(cfg);       //Adds new Config to Group
 
         }
-        public void RemoveAt(int index)
-        {
+        public void RemoveAt(int index){
             Configs.RemoveAt(index);       //Removes config at index
         }
         public void Remove(String config2Find){
@@ -223,8 +221,7 @@ namespace libProChic
                 throw new Exception("Index out of Range");  //If Errors, which happens when Index out of range error is returned
             }
         }
-        public Config Item(String configName)
-        {
+        public Config Item(String configName){
             try
             {
                 return Configs[Contains(configName)];      //Returns Item at returned index of Contains(String)
@@ -234,9 +231,18 @@ namespace libProChic
                 throw new Exception("Config Name not found: " + Name + ':' + configName);  //If Errors, which happens when configName doesn't exist then error is thrown
             }
         }
-        public Config[] ToArray()
-        {
+        public Config[] ToArray(){
             return Configs.ToArray();       //Returns an array of the whole group
+        }
+        public bool MoveNext(){
+            pos++;
+            return (pos < Configs.Count);
+        }
+        public void Reset(){
+            pos = 0;
+        }
+        public IEnumerator GetEnumerator(){
+            return (IEnumerator)this;
         }
     }
 }
