@@ -60,7 +60,7 @@ namespace libProChic
         public Image prepareImage(string imageLocation)
         {
             if (!File.Exists(imageLocation))
-                return new Bitmap(1, 1);
+                throw new Exception(imageLocation + " could not be found");
             FileStream fs = new System.IO.FileStream(imageLocation, System.IO.FileMode.Open, System.IO.FileAccess.Read);
             BinaryReader Reader = new BinaryReader(fs);
             Bitmap bmpStream = new Bitmap(new MemoryStream(Reader.ReadBytes(System.Convert.ToInt32(fs.Length))));//System.Drawing.Image.FromStream(ImageStream));
