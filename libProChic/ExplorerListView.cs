@@ -476,14 +476,15 @@ namespace libProChic
         public ShortCut(String lnkLocation)
         {
             if (!File.Exists(lnkLocation)) return;
-            Shell32.FolderItem fil = (new Shell32.Shell()).NameSpace(Path.GetDirectoryName(lnkLocation)).Items().Item(Path.GetFileName(lnkLocation));
-         // if (fil.IsLink)
-         // {
-         //     Console.WriteLine(lnkLocation);
-         //     lnk = (Shell32.ShellLinkObject)fil.GetLink;
-         //     lType = lnkType.Windows;
-         //
-         // }else
+            //Unable to cast COM object of type 'Shell32.ShellClass' to interface type 'Shell32.IShellDispatch6'. This operation failed because the QueryInterface call on the COM component for the interface with IID '{286E6F1B-7113-4355-9562-96B7E9D64C54}' failed due to the following error: No such interface supported (Exception from HRESULT: 0x80004002 (E_NOINTERFACE)).
+            //  Shell32.FolderItem fil = (new Shell32.Shell()).NameSpace(Path.GetDirectoryName(lnkLocation)).Items().Item(Path.GetFileName(lnkLocation));
+            // if (fil.IsLink)
+            // {
+            //     Console.WriteLine(lnkLocation);
+            //     lnk = (Shell32.ShellLinkObject)fil.GetLink;
+            //     lType = lnkType.Windows;
+            //
+            // }else
             {
                 conLNK = new ConfigHelper(lnkLocation);
                 lType = lnkType.ProjectI2padams;
@@ -503,7 +504,7 @@ namespace libProChic
         private lnkType lType;
         public enum lnkType
         {
-            Windows,ProjectI2padams
+            ProjectI2padams, Windows
         }
         public lnkType ShortcutType { get { return lType; } }
         private void GetShortcutInfo(String full_name)
