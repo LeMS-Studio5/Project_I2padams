@@ -94,6 +94,7 @@ namespace libProChic
             // 
             // GuestArea
             // 
+            this.GuestArea.BackColor = Color.Red;
             this.GuestArea.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GuestArea.Location = new System.Drawing.Point(4, 22);
             this.GuestArea.Name = "GuestArea";
@@ -113,6 +114,7 @@ namespace libProChic
             this.programtopbar.Name = "programtopbar";
             this.programtopbar.Size = new System.Drawing.Size(351, 18);
             this.programtopbar.TabIndex = 0;
+            this.programtopbar.MouseDown += programtopbar_MouseDown;
             // 
             // programIcon
             // 
@@ -134,6 +136,7 @@ namespace libProChic
             this.maximizebutton.TabIndex = 6;
             this.maximizebutton.TabStop = false;
             this.maximizebutton.Tag = "6";
+            this.maximizebutton.Click += maximizebutton_Click;
             // 
             // minimizebutton
             // 
@@ -145,6 +148,7 @@ namespace libProChic
             this.minimizebutton.TabIndex = 5;
             this.minimizebutton.TabStop = false;
             this.minimizebutton.Tag = "2";
+            this.minimizebutton.Click += minimizebutton_Click;
             // 
             // programname
             // 
@@ -168,6 +172,7 @@ namespace libProChic
             this.closebutton.TabIndex = 4;
             this.closebutton.TabStop = false;
             this.closebutton.Tag = "0";
+            this.closebutton.Click += closebutton_Click;
             // 
             // toprightcorner
             // 
@@ -185,6 +190,8 @@ namespace libProChic
             this.bottomrightcorner.Name = "bottomrightcorner";
             this.bottomrightcorner.Size = new System.Drawing.Size(4, 4);
             this.bottomrightcorner.TabIndex = 4;
+            this.bottomrightcorner.MouseDown += bspull_MouseDown;
+            this.bottomrightcorner.MouseUp += bspull_MouseUp;
             // 
             // bottomleftcorner
             // 
@@ -217,6 +224,8 @@ namespace libProChic
             this.bottoms.Name = "bottoms";
             this.bottoms.Size = new System.Drawing.Size(355, 4);
             this.bottoms.TabIndex = 5;
+            this.bottoms.MouseDown += bottompull_MouseDown;
+            this.bottoms.MouseUp += buttompull_MouseUp;
             // 
             // rights
             // 
@@ -226,6 +235,8 @@ namespace libProChic
             this.rights.Name = "rights";
             this.rights.Size = new System.Drawing.Size(4, 306);
             this.rights.TabIndex = 7;
+            this.rights.MouseDown += Rightpull_MouseDown;
+            this.rights.MouseUp += rightpull_MouseUp;
             // 
             // tops
             // 
@@ -238,14 +249,17 @@ namespace libProChic
             // pullbs
             // 
             this.pullbs.Interval = 1;
+            this.pullbs.Tick += pullbs_Tick;
             // 
             // pullbottom
             // 
             this.pullbottom.Interval = 1;
+            this.pullbottom.Tick += pullbottom_Tick;
             // 
             // pullside
             // 
             this.pullside.Interval = 1;
+            this.pullside.Tick += pullside_Tick;
             // 
             // timData
             // 
@@ -345,39 +359,40 @@ namespace libProChic
         {
             pullbs.Stop();
         }
-        private void programtopbar_MouseDown(Control sender, MouseEventArgs e) // , programname.MouseDown, programIcon.MouseDown ', outputProgramtopbar.MouseDown
+        private void programtopbar_MouseDown(Object sender, MouseEventArgs e) // , programname.MouseDown, programIcon.MouseDown ', outputProgramtopbar.MouseDown
         {
             if (e.Button == MouseButtons.Left)
             {
-                sender.Capture = false;
+                ((Control)sender).Capture = false;
                 const int WM_NCLBUTTONDOWN = 0xA1;
                 const int HTCAPTION = 2; // Console.WriteLine(sender.Parent.Parent.Name)
-                Message msg = Message.Create(sender.Parent.Parent.Handle, WM_NCLBUTTONDOWN, new IntPtr(HTCAPTION), IntPtr.Zero); // 
+                Message msg = Message.Create(((Control)sender).Parent.Parent.Handle, WM_NCLBUTTONDOWN, new IntPtr(HTCAPTION), IntPtr.Zero); // 
                 this.DefWndProc(ref msg);
             }
         }
-        private void minimizebutton_Click(Button sender, EventArgs e)
+        private void minimizebutton_Click(Object sender, EventArgs e)
         {
-            Hide();
+            this.Visible = false;
         }
-        public event ClosingEventHandler Closing;
-
-        public  delegate void ClosingEventHandler(object sender, System.ComponentModel.CancelEventArgs e);
+        public event FormClosingEventHandler Closing;
+        
 
         private void closebutton_Click(object sender, EventArgs e) // , outputClosebutton.Click, pro.Exited
         {
-            Closing?.Invoke(sender, new System.ComponentModel.CancelEventArgs());
+            Closing?.Invoke(sender,new FormClosingEventArgs(CloseReason.UserClosing,false));
+            Dispose();
         }
         private void maximizebutton_Click(System.Object sender, System.EventArgs e)
         {
-            // Max(maximize, Me)
+
+            Maximise.Invoke(sender, e);
             if (maximize)
                 ((Button)sender).Image = com.prepareImage(themeLocation + themeConfig.GetConfig("ControlButtons", "MaxLgUp").Setting);
             else
                 ((Button)sender).Image = com.prepareImage(themeLocation + themeConfig.GetConfig("ControlButtons", "MaxSmUp").Setting);
         }
         public new event ResizeEventHandler Resize;
-
+        public event EventHandler Maximise;
         public  delegate void ResizeEventHandler(object sender, EventArgs e);
 
         private void Windows_9X_Shell_ResizeEnd(object sender, EventArgs e)
