@@ -95,6 +95,13 @@ namespace libProChic
         public Config GetConfig(string group, string value2Find){
             return GetConfigGroup(group).Item(value2Find);
         }
+        public Int32 GetConfigAsInt32(string group, string value2Find)
+        {
+            Int32 i = -1;
+            Config c =GetConfigGroup(group).Item(value2Find);
+            if (!Int32.TryParse(c.Setting, out i)) throw new Exception("Setting isn't an int32");
+            return i;
+        }
         private String prepareFile(){
             String cpl = "";    //Creates empty string that will be used to create assembled config file
             foreach (ConfigGroup grp in winINI){        //Loops through each ConfigGroup in winINI
