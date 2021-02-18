@@ -19,13 +19,7 @@ namespace libProChic
 {
     public class ProI2padamsShell: System.Windows.Forms.Panel
     {
-        private MasterClass com = new MasterClass();
-        public ProI2padamsShell(string address) // ByRef exe String, ByRef argurment String)
-        {
-            Size = new Size(siz.Width + lefts.Width + rights.Width, siz.Height + programtopbar.Height + bottoms.Height + 0); // Graphics.FromHwnd(pro.MainWindowHandle).DpiX, Graphics.FromHwnd(pro.MainWindowHandle).DpiY)             REMOVE EXTRAND SEE IF IT WORKS
-                                                                                                                             // SetWindowPos(pro.MainWindowHandle, 0, panGuestMod.PointToScreen(panGuestMod.Location).X, panGuestMod.PointToScreen(panGuestMod.Location).Y, panGuestMod.Width, panGuestMod.Height, 64) 'MoveWindow(pro.MainWindowHandle, panGuestMod.PointToScreen(panGuestMod.Location).X, panGuestMod.PointToScreen(panGuestMod.Location).Y, panGuestMod.Width, panGuestMod.Height, True)
-            themeRefresh();
-        }
+        private MasterClass com = new MasterClass();               
         public ProI2padamsShell()
         {
            // if (System.ComponentModel.LicenseManager.UsageMode == System.ComponentModel.LicenseUsageMode.Designtime)
@@ -119,7 +113,7 @@ namespace libProChic
             // programIcon
             // 
             this.programIcon.BackColor = System.Drawing.Color.Transparent;
-            this.programIcon.Location = new System.Drawing.Point(2, 2);
+            this.programIcon.Location = new System.Drawing.Point(2, 1);
             this.programIcon.Name = "programIcon";
             this.programIcon.Size = new System.Drawing.Size(16, 16);
             this.programIcon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -278,10 +272,30 @@ namespace libProChic
             this.programtopbar.ResumeLayout(false);
             this.programtopbar.PerformLayout();
             this.ResumeLayout(false);
+            base.Resize += resizing;
         }
+        private void resizing(object sender, EventArgs e)
+        {
+            Resize(sender, e);
+        }
+        public new Boolean Focused
+        {
+            get
+            {
+                return foc;
+            }
+            set
+            {
+                foc = value;
+                Debug.WriteLine(Text + " focus has changed to " + foc);
+                themeRefresh();
+            }
+        }
+        public new event EventHandler Resize = new EventHandler((e, a) => { });
         private Rectangle siz = new Rectangle();
         private static ConfigHelper themeConfig;
         private static String themeLocation = "";
+        private Boolean foc = true;
      //   private string data = "";
        // private static List<string> strC;
      //   private static List<string> add; // , cmd New CommandPromptTextBox, outputProgramtopbar New Panel, outputClosebutton New PictureBox, outputProgram New Panel, outputProgramname New Label, outputTopleftcorner New Panel, outputBottomleftcorner New Panel, outputLefts New Panel, outputBottomrightcorner New Panel, outputBottoms New Panel, outputRights New Panel, outputTops New Panel, outputToprightcorner New Panel    
@@ -307,10 +321,10 @@ namespace libProChic
 
         private void themeRefresh()
         {
-            programtopbar.BackColor = com.convertColour(com.Config.GetConfig("Colors","ActiveTitle").Setting);
+            if (foc) programtopbar.BackColor = com.convertColour(com.Config.GetConfig("Colors","ActiveTitle").Setting); else programtopbar.BackColor = com.convertColour(com.Config.GetConfig("Colors", "InactiveTitle").Setting);
             minimizebutton.Image = com.prepareImage(themeLocation + themeConfig.GetConfig("ControlButtons","MinUp").Setting);
             minimizebutton.BackColor = com.convertColour(com.Config.GetConfig("Colors", "ButtonFace").Setting);
-            maximizebutton.Image = com.prepareImage(themeLocation + themeConfig.GetConfig("ControlButtons", "MaxSmUp").Setting);
+            maximizebutton.Image = com.prepareImage(themeLocation + themeConfig.GetConfig("ControlButtons", "MaxSmUp").Setting);//
             maximizebutton.BackColor = com.convertColour(com.Config.GetConfig("Colors","ButtonFace").Setting);
             closebutton.Image = com.prepareImage(themeLocation + themeConfig.GetConfig("ControlButtons", "CloseUp").Setting);
             closebutton.BackColor = com.convertColour(com.Config.GetConfig("Colors", "ButtonFace").Setting);
@@ -391,9 +405,7 @@ namespace libProChic
             else
                 ((Button)sender).Image = com.prepareImage(themeLocation + themeConfig.GetConfig("ControlButtons", "MaxSmUp").Setting);
         }
-        public new event ResizeEventHandler Resize;
         public event EventHandler Maximise;
-        public  delegate void ResizeEventHandler(object sender, EventArgs e);
 
         private void Windows_9X_Shell_ResizeEnd(object sender, EventArgs e)
         {
@@ -423,6 +435,7 @@ namespace libProChic
             themeRefresh();
         }
         private System.ComponentModel.IContainer components;
+        public override String Text { get { return programname.Text; } set { programname.Text = value; } }
       //  private Label lblError;
       //  private OpenFileDialog ofdEXE;
       //  private ContextMenuStrip cmsPicApp;
@@ -437,7 +450,7 @@ namespace libProChic
         private Timer pullbottom;
         private Timer pullside;
         private Timer timData;
-        public Panel program;
+        private Panel program;
         public Panel programtopbar;
         public Button maximizebutton;
         public Button minimizebutton;
