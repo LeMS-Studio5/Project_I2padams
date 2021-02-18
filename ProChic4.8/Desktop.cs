@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using libProChic;
 using System.IO;
 using System.IO.Pipes;
+using System.Diagnostics;
 
 namespace ProChic4._8
 {
@@ -24,14 +25,17 @@ namespace ProChic4._8
                 CheckForIllegalCrossThreadCalls = false;
                 this.com.Config.ConfigUpdated += DesktopLoad;
                 this.Load += DesktopLoad;
-
+                elvDesktop.OSIconLocationPath = com.toSystemPath(com.Config.GetConfig("windows", "ICO").Setting);
+                elvDesktop.Directory = com.toSystemPath(@"C:\Windows\Desktop");
+                System.Threading.Thread thrdFileListener = new System.Threading.Thread(new System.Threading.ThreadStart(FileLaunch));
+                System.Threading.Thread thrdActiveApp = new System.Threading.Thread(new System.Threading.ThreadStart(ActiveApp));
+                thrdFileListener.Start();
+                thrdActiveApp.Start();
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Debug.WriteLine(ex.ToString());
             }
-            elvDesktop.OSIconLocationPath = com.toSystemPath(com.Config.GetConfig("windows", "ICO").Setting);
-            elvDesktop.Directory = com.toSystemPath(@"C:\Windows\Desktop");
         }
         public void DesktopLoad(Object sender, EventArgs e)
         {
@@ -40,10 +44,12 @@ namespace ProChic4._8
                 elvDesktop.UpdateDesktop = false;
                 if (com.Config.GetConfig("Desktop", "TileWallpaper").Setting == "1") elvDesktop.WallpaperLayout = ImageLayout.Tile; else elvDesktop.WallpaperLayout = ImageLayout.Center;
                 elvDesktop.BackColor = com.convertColour(com.Config.GetConfig("Colors", "Background").Setting);
-                //elvDesktop.Wallpaper = (Bitmap)com.prepareImage(com.toSystemPath(com.Config.GetConfig("Desktop", "Wallpaper").Setting));
+                elvDesktop.Wallpaper = (Bitmap)com.prepareImage(com.toSystemPath(com.Config.GetConfig("Desktop", "Wallpaper").Setting));
                 elvDesktop.Pattern = new Bitmap(getPattern(com.Config.GetConfig("Desktop", "Pattern").Setting), 8, 8);
                 elvDesktop.UpdateDesktop = true;
-                int taskWidth = int.Parse(com.Config.GetConfig("Taskbar", "Width").Setting), taskHeight = int.Parse(com.Config.GetConfig("Taskbar", "Height").Setting);
+                int taskWidth = com.Config.GetConfigAsInt32("Taskbar", "Width"), taskHeight = com.Config.GetConfigAsInt32("Taskbar", "Height");
+                panTaskBar.BackgroundImage = com.prepareImage(com.toSystemPath(com.Config.GetConfig("Taskbar", "BackgroundImg").Setting));
+                panTaskBar.BackColor = com.convertColour(com.Config.GetConfig("Colors", "ButtonFace").Setting);
                 panTaskBar.Height = taskHeight;
                 if (taskWidth == -1)
                 {
@@ -55,17 +61,16 @@ namespace ProChic4._8
                     panTaskBar.Width = taskWidth;
                 }
                 panTaskBar.Location = new Point((int)((Width / (Double)2) - (taskWidth / (Double)2)), Height - taskHeight);
-                btnAppLauncher.Location = new Point(int.Parse(com.Config.GetConfig("AppLauncher", "X").Setting), int.Parse(com.Config.GetConfig("AppLauncher", "Y").Setting));
-                btnAppLauncher.Size = new Size(int.Parse(com.Config.GetConfig("AppLauncher", "Width").Setting), int.Parse(com.Config.GetConfig("AppLauncher", "Height").Setting));
+                btnAppLauncher.Location = new Point(com.Config.GetConfigAsInt32("AppLauncher", "X"), com.Config.GetConfigAsInt32("AppLauncher", "Y"));
+                btnAppLauncher.Size = new Size(com.Config.GetConfigAsInt32("AppLauncher", "Width"), com.Config.GetConfigAsInt32("AppLauncher", "Height"));
                 btnAppLauncher.Image = com.prepareImage(com.toSystemPath(com.Config.GetConfig("AppLauncher", "ButtonImage").Setting));
                 btnAppLauncher.Text = com.Config.GetConfig("AppLauncher", "ButtonText").Setting;
                 menAppLaunch.Items.Clear();
                 menAppLaunch.Items.Add(BuildMenuFromPathData(com.toSystemPath(@"C:\Windows\Start Menu\Programs")));
                 panAppLaunch.Size = new Size(panAppLaunch.Width, menAppLaunch.Height);
                 Console.WriteLine(panAppLaunch.Size);
-                panAppLaunch.Location = new Point(int.Parse(com.Config.GetConfig("AppLauncher", "X").Setting), panTaskBar.Location.Y - panAppLaunch.Height);
-                (new System.Threading.Thread(new System.Threading.ThreadStart(FileLaunch))).Start();
-            }
+                panAppLaunch.Location = new Point(com.Config.GetConfigAsInt32("AppLauncher", "MenuXOffset")+btnAppLauncher.Location.X, panTaskBar.Location.Y - panAppLaunch.Height+ com.Config.GetConfigAsInt32("AppLauncher", "MenuYOffset"));//MenuXOffset
+              }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
@@ -151,6 +156,47 @@ namespace ProChic4._8
         {
             elvDesktop.OpenFile(((ToolStripMenuItem)sender).Tag.ToString());
         }
+        private void AppLauncherToggle(object sender, EventArgs e)
+        {
+            panAppLaunch.Visible = !panAppLaunch.Visible;
+            panAppLaunch.BringToFront();
+        }
+        private String ProperAppLaunch(String filePath)
+        {
+            String Ext = Path.GetExtension(filePath);
+            if (Ext.Equals(".exe", StringComparison.CurrentCultureIgnoreCase)) return filePath;
+            if (Ext.Equals(".lnk", StringComparison.CurrentCultureIgnoreCase)) return ProperAppLaunch(com.toSystemPath(new ShortCut(filePath).TargetFile));
+            if (com.Config.GetConfigGroup("Extensions").Contains(Ext) > -1) return com.Config.GetConfig("Extensions", Ext).Setting.Split('^')[0];
+            throw new Exception("File Extention not regristered");
+        }
+        private void addPanelItem(ref AppHolder app)
+        {
+            apps.Add(app.ProcessHandle, app);
+            Panel_Item pan = new Panel_Item(ref app);
+            panTaskBar.Controls.Add(pan);
+            panItems.Add(app.ProcessHandle, pan);
+            pan.AppVisChange += AppVis;
+            panelPlace();
+        }
+
+        private void AppVis(IntPtr Apphandler)
+        {
+            apps[Apphandler].Visible = !apps[Apphandler].Visible;
+        }
+
+        private void panelPlace() {
+            Int32 itmHorPad = com.Config.GetConfigAsInt32("Taskbar", "ItemHorPadding"), itmX = com.Config.GetConfigAsInt32("AppLauncher", "Width") + itmHorPad, itmY = com.Config.GetConfigAsInt32("Taskbar", "ItemY");
+            for (int i = 0; i < panTaskBar.Controls.Count; i++)
+            {
+                if (panTaskBar.Controls[i].GetType()==( typeof(Panel_Item)))
+                {
+                    panTaskBar.Controls[i].Location = new Point(itmX, itmY);// ' pan(i).Visible = True
+                    itmX += panTaskBar.Controls[i].Width + itmHorPad;
+                }
+            }
+        }
+        private Dictionary<IntPtr, AppHolder> apps = new Dictionary<IntPtr, AppHolder>();
+        private Dictionary<IntPtr, Panel_Item> panItems = new Dictionary<IntPtr, Panel_Item>();
         private void FileLaunch()
         {
                 using (NamedPipeClientStream pipeClient = new NamedPipeClientStream("ProjectI2padamsNet"))
@@ -168,15 +214,42 @@ namespace ProChic4._8
 
                         }
                         Console.WriteLine("Here");
-                        AppHolder app = new AppHolder(temp, "");
                         this.Invoke((MethodInvoker)delegate
                         {
-                            // Running on the UI thread
-                            elvDesktop.Controls.Add(app);
+                            AppHolder app = new AppHolder(ProperAppLaunch(temp), "");
+                            if (app!=null)elvDesktop.Controls.Add(app);
+                            app.AppClose += clospro;
+                            addPanelItem(ref app);
                         });
                     }
                 }
             }
         }
+        private void clospro(IntPtr Apphandler)
+        {
+            Debug.WriteLine(apps[Apphandler].Text + " is closing");
+            apps[Apphandler].Dispose();
+            apps.Remove(Apphandler);
+            panItems[Apphandler].Dispose();
+            panItems.Remove(Apphandler);
+        }
+        private void ActiveApp()
+        {
+            IntPtr currentFocus = IntPtr.Zero;
+            IntPtr newFocus;
+            while (true)
+            {
+                newFocus = GetForegroundWindow();
+                if (currentFocus != newFocus && newFocus !=IntPtr.Zero)
+                {
+                    if (this.Handle == newFocus) Debug.WriteLine("Desktop has focus");
+                    if (currentFocus != IntPtr.Zero && apps.ContainsKey(currentFocus)) apps[currentFocus].Focused = false;
+                    currentFocus = newFocus;
+                    if (apps.ContainsKey(newFocus)) apps[newFocus].Focused=true;
+                }
+            }
+        }
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
     }
 }
