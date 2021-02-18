@@ -62,6 +62,7 @@
             this.btnAppLauncher.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.btnAppLauncher.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btnAppLauncher.UseVisualStyleBackColor = false;
+            this.btnAppLauncher.Click += AppLauncherToggle;
             // 
             // elvDesktop
             // 
@@ -102,6 +103,7 @@
             this.panAppLaunch.Name = "panAppLaunch";
             this.panAppLaunch.Size = new System.Drawing.Size(193, 179);
             this.panAppLaunch.TabIndex = 2;
+            this.panAppLaunch.Visible = false;
             // 
             // menAppLaunch
             // 
@@ -121,6 +123,7 @@
             this.Controls.Add(this.panAppLaunch);
             this.Controls.Add(this.panTaskBar);
             this.Controls.Add(this.elvDesktop);
+            this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MainMenuStrip = this.menAppLaunch;
             this.Name = "Desktop";
