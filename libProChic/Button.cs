@@ -96,8 +96,10 @@ namespace libProChic
             Rectangle textRect = new Rectangle(1, 1, Width - 3, Height - 3);
             if (TextImageRelation == TextImageRelation.ImageBeforeText)
             {
-                textRect.X = 6 + Image.Width;
-                textRect.Width = Width - 6 - Image.Width;
+                Int32 imgWidth;
+                if (Image != null) imgWidth = Image.Width; else imgWidth = 0;
+                textRect.X = 6 + (imgWidth);
+                textRect.Width = Width - 6 - (imgWidth);
             }
                // Console.WriteLine(TextAlign);
             sf.HotkeyPrefix = System.Drawing.Text.HotkeyPrefix.Show;
