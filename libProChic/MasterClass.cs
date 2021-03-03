@@ -1,24 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
-
-namespace libProChic
-{
-  public  class MasterClass
-    {
+namespace libProChic{
+    public  class MasterClass {
         private ConfigHelper con;
         private List<Color> colPallette = new List<Color>();
         private String root;
-        public MasterClass()
-        {
+        public MasterClass(){
             root = Environment.ExpandEnvironmentVariables("%appdata%") + @"\LeMS\Update95\";
             if (Directory.Exists(root)) Directory.CreateDirectory(root);    //Creates GameDir if not already created
-            con = new ConfigHelper(toSystemPath(@"C:\WINDOWS\WIN.ini"));//Environment.ExpandEnvironmentVariables(" % appdata % ") + @"\LeMS\Update95\C‰ƒ\WINDOWS
+            ConfigHelper mainCon = new ConfigHelper(root + "settings.ini");
+            con = new ConfigHelper(toSystemPath(mainCon.GetConfig("Master","MasterConfig").Setting));    //
             ColourLoad();
             Config.ConfigUpdated += configUpdate;
         }
@@ -66,7 +61,6 @@ namespace libProChic
             Bitmap bmpStream = new Bitmap(new MemoryStream(Reader.ReadBytes(System.Convert.ToInt32(fs.Length))));//System.Drawing.Image.FromStream(ImageStream));
             Bitmap bmp = bmpStream.Clone(new Rectangle(0, 0, bmpStream.Width, bmpStream.Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb); // , col As Color, intBiPerPixel As Integer = 16 'FROM https://stackoverflow.com/questions/29585959/how-to-release-picture-from-picturebox-so-picture-file-may-be-deleted-in-vb-net and https://www.translatetheweb.com/?ref=TVert&from=&to=en&a=https://dotnet.currifex.org/dotnet/code/graphics/#ImageNoLock                                                                                                                                                     // Dim myEncoderParameters As EncoderParameters = New EncoderParameters(1), memoryStream = New MemoryStream()
             Reader.Close();
-            //bmp.MakeTransparent();
             return prepareImage(bmp); // Image.FromStream(memoryStream)
         }
         public Color FindClosestFromPallet(Color col)
@@ -117,7 +111,6 @@ namespace libProChic
                 System.Diagnostics.Debug.WriteLine("Not supported");
                 return null;
             }
-            //if (bmp.Width < 11) bmp.Save("close.png");
             int ww = bmp.Width / 8;
             int hh = bmp.Height / 8;
             using (FastBitmap fbitmap = new FastBitmap(bmp, 0, 0, bmp.Width - 0, bmp.Height - 0))
