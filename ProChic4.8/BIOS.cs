@@ -23,26 +23,39 @@ namespace ProChic4._8
 
         private void btnBegin_Click(object sender, EventArgs e)
         {
-            try{
+            try
+            {
                 UpdateResources("*.dll");
                 UpdateResources("*.exe");
                 Desktop d = new Desktop();
+                //if (this.InvokeRequired)
+                //{
+                //    this.Invoke((MethodInvoker)delegate
+                //    {
+                //        d.Show();
+                //        this.Hide();
+                //    });
+                //}
+                //else
+                //{
+                //    d.Show();
+                //    this.Hide();
+                //}
                 d.Show();
-                this.Hide();    
-            }catch(Exception ex)
+                d.startThreads();
+                this.Hide();
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
         }
         private void UpdateResources(String ext)
         {
-            //Debug.WriteLine(com.toSystemPath(@"C:\"));
             foreach (String exe in Directory.GetFiles(com.toSystemPath(@"C:\"), ext, SearchOption.AllDirectories))
-            {//   '    Console.WriteLine(exe)
-                //Debug.WriteLine(new FileInfo(Application.ExecutablePath).Directory.Parent.FullName);
+            {
                 foreach (String search in Directory.GetFiles(new FileInfo(Application.ExecutablePath).Directory.Parent.Parent.Parent.FullName, Path.GetFileName(exe), SearchOption.AllDirectories))
                 {
-                    //Debug.WriteLine(search);
                     if ((new FileInfo(exe)).LastWriteTime.ToFileTime() < (new FileInfo(search)).LastWriteTime.ToFileTime() && !search.Contains("dev") && !search.Contains(@"\obj\"))
                     {
                         Debug.WriteLine(Path.GetFileName(exe) + " has been updated");

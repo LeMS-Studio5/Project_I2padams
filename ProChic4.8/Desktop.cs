@@ -25,28 +25,28 @@ namespace ProChic4._8
                 CheckForIllegalCrossThreadCalls = false;
                 this.com.Config.ConfigUpdated += DesktopLoad;
                 this.Load += DesktopLoad;
+                elvDesktop.Click += appLaunchHide;
                 elvDesktop.OSIconLocationPath = com.toSystemPath(com.Config.GetConfig("windows", "ICO").Setting);
-                elvDesktop.Directory = com.toSystemPath(@"C:\Windows\Desktop");
-                System.Threading.Thread thrdFileListener = new System.Threading.Thread(new System.Threading.ThreadStart(FileLaunch));
-                System.Threading.Thread thrdActiveApp = new System.Threading.Thread(new System.Threading.ThreadStart(ActiveApp));
-                thrdFileListener.Start();
-                thrdActiveApp.Start();
+                elvDesktop.Directory = com.toSystemPath(@"C:\Windows\Desktop");               
+                
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.ToString());
             }
         }
+        public void startThreads()
+        {
+            System.Threading.Thread thrdFileListener = new System.Threading.Thread(new System.Threading.ThreadStart(FileLaunch));
+            System.Threading.Thread thrdActiveApp = new System.Threading.Thread(new System.Threading.ThreadStart(ActiveApp));
+            thrdFileListener.Start();
+            thrdActiveApp.Start();
+
+        }
         public void DesktopLoad(Object sender, EventArgs e)
         {
             try
             {
-                elvDesktop.UpdateDesktop = false;
-                if (com.Config.GetConfig("Desktop", "TileWallpaper").Setting == "1") elvDesktop.WallpaperLayout = ImageLayout.Tile; else elvDesktop.WallpaperLayout = ImageLayout.Center;
-                elvDesktop.BackColor = com.convertColour(com.Config.GetConfig("Colors", "Background").Setting);
-                elvDesktop.Wallpaper = (Bitmap)com.prepareImage(com.toSystemPath(com.Config.GetConfig("Desktop", "Wallpaper").Setting));
-                elvDesktop.Pattern = new Bitmap(getPattern(com.Config.GetConfig("Desktop", "Pattern").Setting), 8, 8);
-                elvDesktop.UpdateDesktop = true;
                 int taskWidth = com.Config.GetConfigAsInt32("Taskbar", "Width"), taskHeight = com.Config.GetConfigAsInt32("Taskbar", "Height");
                 panTaskBar.BackgroundImage = com.prepareImage(com.toSystemPath(com.Config.GetConfig("Taskbar", "BackgroundImg").Setting));
                 panTaskBar.BackColor = com.convertColour(com.Config.GetConfig("Colors", "ButtonFace").Setting);
@@ -69,7 +69,13 @@ namespace ProChic4._8
                 menAppLaunch.Items.Add(BuildMenuFromPathData(com.toSystemPath(@"C:\Windows\Start Menu\Programs")));
                 panAppLaunch.Size = new Size(panAppLaunch.Width, menAppLaunch.Height);
                 Console.WriteLine(panAppLaunch.Size);
-                panAppLaunch.Location = new Point(com.Config.GetConfigAsInt32("AppLauncher", "MenuXOffset")+btnAppLauncher.Location.X, panTaskBar.Location.Y - panAppLaunch.Height+ com.Config.GetConfigAsInt32("AppLauncher", "MenuYOffset"));//MenuXOffset
+                panAppLaunch.Location = new Point(com.Config.GetConfigAsInt32("AppLauncher", "MenuXOffset")+btnAppLauncher.Location.X, panTaskBar.Location.Y - panAppLaunch.Height+ com.Config.GetConfigAsInt32("AppLauncher", "MenuYOffset"));
+                elvDesktop.UpdateDesktop = false;
+                if (com.Config.GetConfig("Desktop", "TileWallpaper").Setting == "1") elvDesktop.WallpaperLayout = ImageLayout.Tile; else elvDesktop.WallpaperLayout = ImageLayout.Center;
+                elvDesktop.BackColor = com.convertColour(com.Config.GetConfig("Colors", "Background").Setting);
+                elvDesktop.Wallpaper = (Bitmap)com.prepareImage(com.toSystemPath(com.Config.GetConfig("Desktop", "Wallpaper").Setting));
+                elvDesktop.Pattern = new Bitmap(getPattern(com.Config.GetConfig("Desktop", "Pattern").Setting), 8, 8);
+                elvDesktop.UpdateDesktop = true;
               }
             catch (Exception ex)
             {
@@ -154,7 +160,12 @@ namespace ProChic4._8
         }
         private void launch(Object sender, EventArgs e)
         {
+            panAppLaunch.Hide();
             elvDesktop.OpenFile(((ToolStripMenuItem)sender).Tag.ToString());
+        }
+        private void appLaunchHide(Object sender, EventArgs e)
+        {
+            panAppLaunch.Hide();
         }
         private void AppLauncherToggle(object sender, EventArgs e)
         {
@@ -244,8 +255,10 @@ namespace ProChic4._8
                 {
                     if (this.Handle == newFocus) Debug.WriteLine("Desktop has focus");
                     if (currentFocus != IntPtr.Zero && apps.ContainsKey(currentFocus)) apps[currentFocus].Focused = false;
+                    if (currentFocus != IntPtr.Zero && panItems.ContainsKey(currentFocus)) panItems[currentFocus].Held = false;
                     currentFocus = newFocus;
                     if (apps.ContainsKey(newFocus)) apps[newFocus].Focused=true;
+                    if (panItems.ContainsKey(newFocus)) panItems[newFocus].Held = true;
                 }
             }
         }
