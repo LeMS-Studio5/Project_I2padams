@@ -40,6 +40,14 @@ namespace ProChic4._8
                 do {
                     GetClientRect(pro.MainWindowHandle, ref siz);
                 } while (siz.Width == 0 && siz.Height == 0);
+                // WS_POPUP style and add WS_CHILD style
+                const UInt32 WS_POPUP = 0x80000000, WS_CHILD = 0x40000000;
+                uint style = (UInt32)GetWindowLong(pro.MainWindowHandle, -16);
+                //style = (style & ~(WS_POPUP)) | WS_CHILD;
+                SetWindowLong(pro.MainWindowHandle, -16, style);
+        //int GWL_STYLE = (-16);
+        //uint WS_VISIBLE = 0x10000000;
+                //SetWindowLong(pro.MainWindowHandle, GWL_STYLE, WS_VISIBLE);
                 MoveWindow(pro.MainWindowHandle, 0, 0, siz.Width, siz.Height, true);
                 Size = new Size(siz.Width + lefts.Width + rights.Width, siz.Height + programtopbar.Height + bottoms.Height + 0);
                 this.Maximise += Max;
@@ -136,57 +144,13 @@ namespace ProChic4._8
         public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
         [DllImport("user32.dll")]
         private static extern bool GetClientRect(IntPtr HWND, ref Rectangle LPRECT);
+        [DllImport("user32.dll")]
+        static extern int SetWindowLong(IntPtr hWnd, int nIndex, uint dwNewLong);
+        [DllImport("user32.dll")]
+        static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+        [System.Runtime.InteropServices.DllImport("user32")]
+        private static extern Int32 apiAttachThreadInput(Int32 idThreadAttach, Int32 idThreadAttachTo, Int32 fAttach);
+        [DllImport("user32.dll")]
+        static extern uint GetWindowThreadProcessId(IntPtr hWnd, IntPtr ProcessId);
     }
-    public class Taskbar
-    {
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern int FindWindow(string className, string windowText);
-
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern int ShowWindow(int hwnd, int command);
-
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        public static extern int FindWindowEx(int parentHandle, int childAfter, string className, int windowTitle);
-
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern int GetDesktopWindow();
-
-        private const int SW_HIDE = 0;
-        private const int SW_SHOW = 1;
-
-        protected static int Handle
-        {
-            get
-            {
-                return FindWindow("Shell_TrayWnd", "");
-            }
-        }
-
-        protected static int HandleOfStartButton
-        {
-            get
-            {
-                int handleOfDesktop = GetDesktopWindow();
-                int handleOfStartButton = FindWindowEx(handleOfDesktop, 0, "button", 0);
-                return handleOfStartButton;
-            }
-        }
-
-        private Taskbar()
-        {
-            // hide ctor
-        }
-
-        public static void Show()
-        {
-            ShowWindow(Handle, SW_SHOW);
-            ShowWindow(HandleOfStartButton, SW_SHOW);
-        }
-
-        public static void Hide()
-        {
-            ShowWindow(Handle, SW_HIDE);
-            ShowWindow(HandleOfStartButton, SW_HIDE);
-        }
-    }   //Code from https://stackoverflow.com/questions/19022789/hide-taskbar-in-winforms-application/19024531#19024531
 }
