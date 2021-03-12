@@ -37,10 +37,11 @@
             this.btnBegin.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnBegin.Held = false;
             this.btnBegin.HoldOnPush = false;
-            this.btnBegin.Location = new System.Drawing.Point(73, 102);
+            this.btnBegin.Location = new System.Drawing.Point(12, 12);
             this.btnBegin.Name = "btnBegin";
             this.btnBegin.ShowFocusRectangle = true;
             this.btnBegin.Size = new System.Drawing.Size(143, 67);
+            this.btnBegin.Stuck = false;
             this.btnBegin.TabIndex = 0;
             this.btnBegin.Text = "Go to Windows 95";
             this.btnBegin.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
