@@ -16,6 +16,7 @@ namespace ProChic4._8
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            //(new TestEnvironment()).Show();
             Application.Run(new BIOS());
         }
     }
