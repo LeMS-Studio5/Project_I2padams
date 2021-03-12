@@ -11,14 +11,17 @@ namespace libProChic{
         public Image addImage(string strPath, string strCurrentDir){
             string strFilPath = strPath;
             try{
-                if (System.IO.Directory.Exists(strPath) == true && (new DirectoryInfo(strPath)).Name.EndsWith("‰ƒ"))
+                if (System.IO.Directory.Exists(strPath) == true && (new DirectoryInfo(strPath)).Name.EndsWith("‰ƒ"))//DrivePath
                     return DriveIcon(strPath);
-                if (System.IO.Directory.Exists(strPath) == true && strPath == strCurrentDir)
-                    return com.prepareImage(OSIco[4].ToBitmap(), FollowPallet);
-                if (System.IO.Directory.Exists(strPath) == true && strPath != strCurrentDir)
-                    return com.prepareImage(OSIco[3].ToBitmap(), FollowPallet);
-                if (!System.IO.File.Exists(strPath))
-                    return com.prepareImage(OSIco[52].ToBitmap(), FollowPallet);
+                if (System.IO.Directory.Exists(strPath) == true && strPath == strCurrentDir)//Open Directory
+                    return com.prepareImage(Bitmap.FromHicon(OSIco[68].Handle), FollowPallet);
+                if (System.IO.Directory.Exists(strPath) == true && strPath != strCurrentDir)//Directory
+                    return com.prepareImage(Bitmap.FromHicon(OSIco[69].Handle), FollowPallet);
+                Int32 intIconIndex;
+                if (strPath.Contains(',') && Int32.TryParse(strPath.Split(',').Last(), out intIconIndex))//Icon Extraction
+                    return Bitmap.FromHicon(TsudaKageyu.IconUtil.Split(new Icon(strPath.Split(',')[0]))[intIconIndex].Handle);//, true);
+                if (!System.IO.File.Exists(strPath))//Error
+                    return com.prepareImage(Bitmap.FromHicon(OSIco[52].Handle), FollowPallet);
                 if (strPath.EndsWith("lnk", true, System.Globalization.CultureInfo.CurrentUICulture))
                 {
                     Bitmap ink = new Bitmap(1, 1);
@@ -27,7 +30,7 @@ namespace libProChic{
                     if (ink.Width + ink.Height == 2)
                         ink = new Bitmap(addImage(com.toSystemPath(lnk.TargetFile), ""), 32, 32);
                     if (!(File.ReadAllLines(strFilPath).Count() >= 5 && File.ReadAllLines(strFilPath)[4] == "Sys"))
-                        g.DrawImage(OSIco[29].ToBitmap(), 0, ink.Height - OSIco[29].Height);
+                        g.DrawImage(Bitmap.FromHicon(OSIco[29].Handle), 0, ink.Height - OSIco[29].Height);
                     return com.prepareImage(ink, FollowPallet);
                 }
                 if (strPath.EndsWith("U95exe", true, System.Globalization.CultureInfo.CurrentUICulture) || strPath.EndsWith("U95com", true, System.Globalization.CultureInfo.CurrentUICulture))
@@ -39,15 +42,15 @@ namespace libProChic{
                     if (i.Count > 0)
                         return com.prepareImage(i.GetIcon(i.Count - 1).ToBitmap(), FollowPallet);
                     else
-                        return com.prepareImage(OSIco[2].ToBitmap(), FollowPallet);  // Return setSetting.OSIco(Int(ReadAllLines(strPath).Last)).ToBitmap
+                        return com.prepareImage(Bitmap.FromHicon(OSIco[70].Handle), FollowPallet);  // Return setSetting.OSIco(Int(ReadAllLines(strPath).Last)).ToBitmap
                 }
                 if (strPath.EndsWith(".U95ico", true, System.Globalization.CultureInfo.CurrentUICulture))
                     return com.prepareImage(strPath);
                 if (strPath.EndsWith(".txt", true, System.Globalization.CultureInfo.CurrentUICulture))
-                    return com.prepareImage(OSIco[42].ToBitmap(), FollowPallet);
+                    return com.prepareImage(Bitmap.FromHicon(OSIco[42].Handle), FollowPallet);
                 if (strPath.EndsWith(".msi", true, System.Globalization.CultureInfo.CurrentUICulture))
-                    return com.prepareImage(OSIco[46].ToBitmap(), FollowPallet);
-                return com.prepareImage(OSIco[0].ToBitmap(), FollowPallet);
+                    return com.prepareImage(Bitmap.FromHicon(OSIco[46].Handle), FollowPallet);
+                return com.prepareImage(Bitmap.FromHicon(OSIco[0].Handle), FollowPallet);
             }
             catch (Exception ex)
             {
@@ -202,12 +205,14 @@ namespace libProChic{
         public ExplorerListView() : base() 
         {
             foldOptions = new ConfigHelper(com.toSystemPath(com.Config.GetConfig("Explorer", "ConfigLoc").Setting));
+            //pipeServer = new NamedPipeServerStream("ProjectI2padamsNet");
         }
         public bool OnErrorGoToParentDirectory { get; set; } = false;
-        private NamedPipeServerStream pipeServer = new NamedPipeServerStream("ProjectI2padamsNet");     // Based on code from https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-use-anonymous-pipes-for-local-interprocess-communication
+        private NamedPipeServerStream pipeServer = new NamedPipeServerStream("ProjectI2padamsNet",PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances);     // Based on code from https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-use-anonymous-pipes-for-local-interprocess-communication
         private StreamWriter sw;
         public void OpenFile(String filPath)
         {
+            //Debug.WriteLine(filPath);
             sw = new StreamWriter(pipeServer);
             if (!pipeServer.IsConnected) pipeServer.WaitForConnection();
             sw.AutoFlush = true;
