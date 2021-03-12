@@ -8,7 +8,7 @@ namespace libProChic
 {
   public  class ConfigHelper
     {
-        private List<ConfigGroup> winINI =new List<ConfigGroup>();            //Variable that will hold each config line
+        private List<ConfigGroup> winINI { get; set; } = new List<ConfigGroup>();            //Variable that will hold each config line
         private String fileLoc = "";         //File Location of the Config File        
         public ConfigHelper(string fileName){
             try
@@ -48,7 +48,7 @@ namespace libProChic
             for (int i = 0; i <= fil.Length - 1; i++)      //Loops through each line of the fil
             {
                 if (fil[i].StartsWith("[") && fil[i].EndsWith("]"))
-                {     //Checks to see if line is a group header                    
+                {     //Checks to see if line is a group header  
                     ConfigGroup grp = new ConfigGroup(fil[i], i);       //Creates a new group and sets the name and index of header
                     i++;    //Increments down to first line in group
                     for(bool b=false; i < fil.Length && fil[i] != "";){      //Loops through each config in group, need for loop for pretest loop, j won't be used, but is needed for the loop  Loops through till blank line or end of array                    
@@ -67,7 +67,11 @@ namespace libProChic
                 if (grp.Name.Equals(group2Find,StringComparison.CurrentCultureIgnoreCase)) return grp;     //If the group name matches the one being searched  for then return it
             }
             throw new Exception($"ConfigGroup: {group2Find} not Found");     //If the group was not found then throw exception
-        }     
+        }
+        public ConfigGroup[] GetAllConfigsGroup()
+        {
+            return winINI.ToArray();            
+        }
         public void RemoveGroup(string Group2Find){
             winINI.RemoveAt(GetConfigGroup(Group2Find).Index);
             for (int index = 0; index <= winINI.Count - 1; index++){        //Loops through each configGroup of winINI
@@ -114,6 +118,12 @@ namespace libProChic
             cpl.Trim();     //Removes the last NewLine
             return cpl;     //Returns compiled file
         }
+        public Boolean Exists(String GroupName){
+            foreach(ConfigGroup c in winINI){
+                if (c.Name.Equals(GroupName,StringComparison.CurrentCultureIgnoreCase)) return true;
+            }
+            return false;
+        }
         private bool disposedValue = false; // To detect redundant calls
         protected virtual void Dispose(bool disposing)
         {
@@ -143,7 +153,6 @@ namespace libProChic
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
         public void MoveFile(String newLocation)
         {
             File.Move(fileLoc, newLocation);
