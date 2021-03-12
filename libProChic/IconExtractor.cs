@@ -408,7 +408,7 @@ namespace TsudaKageyu
         /// Split an Icon consists of multiple icons into an array of Icon each
         /// consists of single icons.
         /// </summary>
-        /// <param name="icon">A System.Drawing.Icon to be split.</param>
+        /// <param name="fileLocation">Path to icon to be split.</param>
         /// <returns>An array of System.Drawing.Icon.</returns>
         public static Icon[] Split(String fileLocation)
         {
