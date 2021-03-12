@@ -1,4 +1,6 @@
-﻿namespace ProChic4._8
+﻿using libProChic;
+
+namespace ProChic4._8
 {
     partial class Desktop
     {
@@ -33,7 +35,8 @@
             this.btnAppLauncher = new libProChic.Button();
             this.elvDesktop = new libProChic.ExplorerListView();
             this.panAppLaunch = new System.Windows.Forms.Panel();
-            this.menAppLaunch = new System.Windows.Forms.MenuStrip();
+            this.menAppLaunch = new MenuStrip();
+            this.picAppLaunch = new System.Windows.Forms.PictureBox();
             this.panTaskBar.SuspendLayout();
             this.panAppLaunch.SuspendLayout();
             this.menAppLaunch.SuspendLayout();
@@ -99,6 +102,7 @@
             this.panAppLaunch.AutoSize = false;
             this.panAppLaunch.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.panAppLaunch.Controls.Add(this.menAppLaunch);
+            this.panAppLaunch.Controls.Add(this.picAppLaunch);
             this.panAppLaunch.Location = new System.Drawing.Point(0, 195);
             this.panAppLaunch.Name = "panAppLaunch";
             this.panAppLaunch.Size = new System.Drawing.Size(193, 179);
@@ -107,12 +111,22 @@
             // 
             // menAppLaunch
             // 
+            this.picAppLaunch.Dock = System.Windows.Forms.DockStyle.Right;
             this.menAppLaunch.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.VerticalStackWithOverflow;
             this.menAppLaunch.Location = new System.Drawing.Point(0, 0);
             this.menAppLaunch.Name = "menAppLaunch";
             this.menAppLaunch.Size = new System.Drawing.Size(193, 44);
             this.menAppLaunch.TabIndex = 0;
             this.menAppLaunch.Text = "menAppLaunch";
+            // 
+            // picAppLaunch
+            // 
+            this.picAppLaunch.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.picAppLaunch.Dock = System.Windows.Forms.DockStyle.Left;
+            this.picAppLaunch.Location = new System.Drawing.Point(0, 0);
+            this.picAppLaunch.Name = "menAppLaunch";
+            //this.picAppLaunch.Size = new System.Drawing.Size(193, 44);
+            this.picAppLaunch.TabIndex = 0;
             // 
             // Desktop
             // 
@@ -144,7 +158,8 @@
         private System.Windows.Forms.Panel panTaskBar;
         private libProChic.Button btnAppLauncher;
         private System.Windows.Forms.Panel panAppLaunch;
-        private System.Windows.Forms.MenuStrip menAppLaunch;
+        private MenuStrip menAppLaunch;
+        private System.Windows.Forms.PictureBox picAppLaunch;
     }
 }
 

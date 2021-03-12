@@ -35,13 +35,17 @@ namespace ProChic4._8
                 Debug.WriteLine(ex.ToString());
             }
         }
-        public void startThreads()
+        private System.Threading.Thread thrdFileListener;
+        private System.Threading.Thread thrdActiveApp;
+        public new DialogResult ShowDialog()
         {
-            System.Threading.Thread thrdFileListener = new System.Threading.Thread(new System.Threading.ThreadStart(FileLaunch));
-            System.Threading.Thread thrdActiveApp = new System.Threading.Thread(new System.Threading.ThreadStart(ActiveApp));
+            Show();
+            thrdFileListener = new System.Threading.Thread(new System.Threading.ThreadStart(FileLaunch));
+            thrdActiveApp = new System.Threading.Thread(new System.Threading.ThreadStart(ActiveApp));
             thrdFileListener.Start();
             thrdActiveApp.Start();
-
+            Hide();
+            return base.ShowDialog();
         }
         public void DesktopLoad(Object sender, EventArgs e)
         {
@@ -61,16 +65,8 @@ namespace ProChic4._8
                     panTaskBar.Width = taskWidth;
                 }
                 panTaskBar.Location = new Point((int)((Width / (Double)2) - (taskWidth / (Double)2)), Height - taskHeight);
-                btnAppLauncher.Location = new Point(com.Config.GetConfigAsInt32("AppLauncher", "X"), com.Config.GetConfigAsInt32("AppLauncher", "Y"));
-                btnAppLauncher.Size = new Size(com.Config.GetConfigAsInt32("AppLauncher", "Width"), com.Config.GetConfigAsInt32("AppLauncher", "Height"));
-                btnAppLauncher.Image = com.prepareImage(com.toSystemPath(com.Config.GetConfig("AppLauncher", "ButtonImage").Setting));
-                btnAppLauncher.Text = com.Config.GetConfig("AppLauncher", "ButtonText").Setting;
-                menAppLaunch.Items.Clear();
-                menAppLaunch.Items.Add(BuildMenuFromPathData(com.toSystemPath(@"C:\Windows\Start Menu\Programs")));
-                panAppLaunch.Size = new Size(panAppLaunch.Width, menAppLaunch.Height);
-                Console.WriteLine(panAppLaunch.Size);
-                panAppLaunch.Location = new Point(com.Config.GetConfigAsInt32("AppLauncher", "MenuXOffset")+btnAppLauncher.Location.X, panTaskBar.Location.Y - panAppLaunch.Height+ com.Config.GetConfigAsInt32("AppLauncher", "MenuYOffset"));
                 elvDesktop.UpdateDesktop = false;
+                MenuSeup();
                 if (com.Config.GetConfig("Desktop", "TileWallpaper").Setting == "1") elvDesktop.WallpaperLayout = ImageLayout.Tile; else elvDesktop.WallpaperLayout = ImageLayout.Center;
                 elvDesktop.BackColor = com.convertColour(com.Config.GetConfig("Colors", "Background").Setting);
                 elvDesktop.Wallpaper = (Bitmap)com.prepareImage(com.toSystemPath(com.Config.GetConfig("Desktop", "Wallpaper").Setting));
@@ -79,7 +75,37 @@ namespace ProChic4._8
               }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Debug.WriteLine(ex.ToString());
+            }
+        }
+        private void MenuSeup()
+        {
+            btnAppLauncher.Location = new Point(com.Config.GetConfigAsInt32("AppLauncher", "X"), com.Config.GetConfigAsInt32("AppLauncher", "Y"));
+            btnAppLauncher.Size = new Size(com.Config.GetConfigAsInt32("AppLauncher", "Width"), com.Config.GetConfigAsInt32("AppLauncher", "Height"));
+            btnAppLauncher.Image = com.prepareImage(com.toSystemPath(com.Config.GetConfig("AppLauncher", "ButtonImage").Setting));
+            btnAppLauncher.Text = com.Config.GetConfig("AppLauncher", "ButtonText").Setting;
+            ConfigHelper conMenu = new ConfigHelper(com.toSystemPath(com.Config.GetConfig("AppLauncher", "Contents").Setting));
+            menAppLaunch.Items.Clear();
+            foreach(ConfigGroup cGrp in conMenu.GetAllConfigsGroup()) {
+                if (cGrp.Name==("Image")) {                  
+                }else if (cGrp.Name == "Split"){
+                    menAppLaunch.Items.Add(new ToolStripSeparator());
+                }else{
+                    menAppLaunch.Items.Add(BuildMenu(cGrp));
+                }
+            }
+            menAppLaunch.Padding = new Padding(0);
+            //menAppLaunch.BackColor = com.convertColour(com.Config.GetConfig("Colors", "ButtonFace").Setting);
+            panAppLaunch.Size = new Size(panAppLaunch.Width, menAppLaunch.Height + 0);
+            panAppLaunch.Location = new Point(com.Config.GetConfigAsInt32("AppLauncher", "MenuXOffset") + btnAppLauncher.Location.X, panTaskBar.Location.Y - menAppLaunch.Height + com.Config.GetConfigAsInt32("AppLauncher", "MenuYOffset"));
+            panAppLaunch.Size = new Size(panAppLaunch.Width, menAppLaunch.Height+0);
+            if (conMenu.Exists("Image"))
+            {
+                Bitmap i = com.prepareImage(com.toSystemPath(conMenu.GetConfig("Image", "src").Setting)), b = new Bitmap(i.Width, picAppLaunch.Height);// ;
+                Graphics g = Graphics.FromImage(b);
+                g.DrawImage(i, new Point(0, picAppLaunch.Height - i.Height));
+                picAppLaunch.Image = b;
+                picAppLaunch.BackColor = com.convertColour((conMenu.GetConfig("Image", "BackgroundCol").Setting));
             }
         }
         public Image getPattern(string patternString)
@@ -102,14 +128,35 @@ namespace ProChic4._8
             }
             return canvasbitmap;
         }
-        public ToolStripMenuItem BuildMenuFromPathData(String RootPath)
+        private ToolStripMenuItem BuildMenu(ConfigGroup conGroup)
+        {
+            ToolStripMenuItem tsm = new ToolStripMenuItem(conGroup.Name);
+            if (conGroup.Contains("Path") > -1) tsm= BuildMenuFromPathData(com.toSystemPath(conGroup.Item("Path").Setting));
+            if (conGroup.Contains("cmd") > -1)
+            {
+                tsm.Tag = conGroup.Item("cmd").Setting;
+                tsm.Click += launch;
+            }
+            if (conGroup.Contains("IconResource") > -1)
+            {
+                if (conGroup.Item("IconResource").Setting.Contains(",")) tsm.Image = elvDesktop.addImage(com.toSystemPath(conGroup.Item("IconResource").Setting),""); else tsm.Image =com.prepareImage(com.toSystemPath(conGroup.Item("IconResource").Setting));
+            }
+            tsm.ImageScaling = ToolStripItemImageScaling.None;
+            tsm.TextAlign = ContentAlignment.MiddleLeft;
+            tsm.ImageAlign = ContentAlignment.MiddleLeft;
+            tsm.Alignment = ToolStripItemAlignment.Left;
+            tsm.Padding = new Padding(0);
+           //Debug.WriteLine(tsm.    );
+            return tsm;
+        }
+        private ToolStripMenuItem BuildMenuFromPathData(String RootPath)
         {
             try
             {
                 ToolStripMenuItem tsmi = new ToolStripMenuItem(new DirectoryInfo(RootPath).Name, elvDesktop.addImage(RootPath, RootPath));
                 foreach (DirectoryInfo dirInfo in ListDirs(RootPath))
                 {
-                    //Console.WriteLine(dirInfo.FullName);
+                    //Debug.WriteLine(dirInfo.FullName);
                     tsmi.DropDownItems.Add(BuildMenuFromPathData(dirInfo.FullName));
                 }
                 foreach (FileInfo filInfo in ListFiles(RootPath))
@@ -120,7 +167,7 @@ namespace ProChic4._8
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Debug.WriteLine(ex.ToString());
                 return null;
             }
         }
@@ -141,7 +188,7 @@ namespace ProChic4._8
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Debug.WriteLine(ex.ToString());
                 return null;
             }
         }
@@ -154,7 +201,7 @@ namespace ProChic4._8
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Debug.WriteLine(ex.ToString());
             }
             return null;
         }
@@ -189,12 +236,10 @@ namespace ProChic4._8
             pan.AppVisChange += AppVis;
             panelPlace();
         }
-
         private void AppVis(IntPtr Apphandler)
         {
             apps[Apphandler].Visible = !apps[Apphandler].Visible;
         }
-
         private void panelPlace() {
             Int32 itmHorPad = com.Config.GetConfigAsInt32("Taskbar", "ItemHorPadding"), itmX = com.Config.GetConfigAsInt32("AppLauncher", "Width") + itmHorPad, itmY = com.Config.GetConfigAsInt32("Taskbar", "ItemY");
             for (int i = 0; i < panTaskBar.Controls.Count; i++)
@@ -216,22 +261,34 @@ namespace ProChic4._8
                     string temp = "";
                     using (StreamReader sr = new StreamReader(pipeClient))
                     {
-                    while (temp != "Exit")
+                    while (true)//temp != "ProChicSuspend" || temp!= "ProChicExit")
                     {
-                        while ((temp = sr.ReadLine()) == "")
+                            while ((temp = sr.ReadLine()) == "") ;
+                            Debug.WriteLineIf(temp!="",temp);
+                        if (temp == "ProChicExit")
                         {
-
-                            Console.WriteLine(temp);
-
+                            DialogResult = DialogResult.Cancel;
+                            Debug.WriteLine("CANCEL");
+                            this.Close();
+                            thrdFileListener.Abort();
                         }
-                        Console.WriteLine("Here");
-                        this.Invoke((MethodInvoker)delegate
+                        else if (temp == "ProChicSuspend")
                         {
-                            AppHolder app = new AppHolder(ProperAppLaunch(temp), "");
-                            if (app!=null)elvDesktop.Controls.Add(app);
-                            app.AppClose += clospro;
-                            addPanelItem(ref app);
-                        });
+                            DialogResult = DialogResult.OK;
+                            Debug.WriteLine("OK");
+                            this.Close();
+                            thrdFileListener.Abort();
+                        }
+                        else
+                        {
+                            this.Invoke((MethodInvoker)delegate
+                            {
+                                AppHolder app = new AppHolder(ProperAppLaunch(temp), "");
+                                if (app != null) elvDesktop.Controls.Add(app);
+                                app.AppClose += clospro;
+                                addPanelItem(ref app);
+                            });
+                        }
                     }
                 }
             }
@@ -248,7 +305,7 @@ namespace ProChic4._8
         {
             IntPtr currentFocus = IntPtr.Zero;
             IntPtr newFocus;
-            while (true)
+            while (!IsDisposed)
             {
                 newFocus = GetForegroundWindow();
                 if (currentFocus != newFocus && newFocus !=IntPtr.Zero)
@@ -261,8 +318,10 @@ namespace ProChic4._8
                     if (panItems.ContainsKey(newFocus)) panItems[newFocus].Held = true;
                 }
             }
+            thrdActiveApp.Abort();
         }
         [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
+        private static extern IntPtr GetForegroundWindow();        
     }
+    
 }
