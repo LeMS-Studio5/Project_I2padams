@@ -48,11 +48,11 @@ namespace libProChic{
             else
                 return bmp;
         }
-        private Image prepareImage(Bitmap bmp)
+        private Bitmap prepareImage(Bitmap bmp)
         {
             return Process(bmp, Color.Transparent);
         }
-        public Image prepareImage(string imageLocation)
+        public Bitmap prepareImage(string imageLocation)
         {
             if (!File.Exists(imageLocation))
                 throw new Exception(imageLocation + " could not be found");
