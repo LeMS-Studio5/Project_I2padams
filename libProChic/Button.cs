@@ -104,7 +104,7 @@ namespace libProChic
                // Console.WriteLine(TextAlign);
             sf.HotkeyPrefix = System.Drawing.Text.HotkeyPrefix.Show;
             // ImageAli
-            if ((blnPressed && Enabled) || Held)
+            if ((blnPressed && Enabled && (! Stuck)) || Held)
             {
                 g.FillRectangle(new SolidBrush(colLightBorder), new Rectangle(0, 0, Width, Height));
                 g.FillRectangle(Brushes.Black, new Rectangle(0, 0, Width - 1, Height - 1));
@@ -156,6 +156,7 @@ namespace libProChic
         public new TextImageRelation TextImageRelation { get; set; } = TextImageRelation.Overlay;
         public bool HoldOnPush { get; set; } = false;
         public bool ShowFocusRectangle { get; set; } = true;
+        public bool Stuck { get; set; } = false;
         public bool Held
         {
             set
