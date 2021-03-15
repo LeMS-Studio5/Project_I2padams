@@ -11,12 +11,12 @@ namespace Notepad
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        [STAThread]
-        static void Main()
+        static void Main(String[] args)
         {
+            String strFile = string.Join("",args );
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Notepad());
+            Application.Run(new formnotepad(strFile));
         }
     }
 }
