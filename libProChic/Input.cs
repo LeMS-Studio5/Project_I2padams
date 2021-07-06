@@ -5,7 +5,7 @@ using System.Text;
 
 namespace libProChic
 {
-    public class InputBox
+    public class InputBox: ProI2padamsShell
     {
         private Config config;
         private string v1;
