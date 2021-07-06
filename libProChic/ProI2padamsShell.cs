@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Net;
+using System.Security.Permissions;
 
 namespace libProChic
 {
@@ -49,7 +50,7 @@ namespace libProChic
             this.programIcon = new System.Windows.Forms.PictureBox();
             this.maximizebutton = new Button();
             this.minimizebutton = new Button();
-            this.programname = new System.Windows.Forms.Label();
+            this.programname = new Label();
             this.closebutton = new Button();
             this.toprightcorner = new System.Windows.Forms.Panel();
             this.bottomrightcorner = new System.Windows.Forms.Panel();
@@ -292,6 +293,7 @@ namespace libProChic
             }
         }
         public new event EventHandler Resize = new EventHandler((e, a) => { });
+        public event EventHandler Closed = new EventHandler((e, a) => { });
         private Rectangle siz = new Rectangle();
         private static ConfigHelper themeConfig;
         private static String themeLocation = "";
@@ -389,8 +391,6 @@ namespace libProChic
             this.Visible = false;
         }
         public event FormClosingEventHandler Closing;
-        
-
         private void closebutton_Click(object sender, EventArgs e) // , outputClosebutton.Click, pro.Exited
         {
             Closing?.Invoke(sender,new FormClosingEventArgs(CloseReason.UserClosing,false));
@@ -436,16 +436,34 @@ namespace libProChic
         }
         private System.ComponentModel.IContainer components;
         public override String Text { get { return programname.Text; } set { programname.Text = value; } }
-      //  private Label lblError;
-      //  private OpenFileDialog ofdEXE;
-      //  private ContextMenuStrip cmsPicApp;
-      //  private ToolStripMenuItem RestoreToolStripMenuItem;
-      //  private ToolStripMenuItem MoveToolStripMenuItem;
-      //  private ToolStripMenuItem SizeToolStripMenuItem;
-      //  private ToolStripMenuItem MinimizeToolStripMenuItem;
-      //  private ToolStripMenuItem MaximizeToolStripMenuItem;
-      //  private ToolStripSeparator ToolStripSeparator1;
-      //  private ToolStripMenuItem CloseToolStripMenuItem;
+        public DialogResult DialogResult { get; set; }
+        [SecurityPermissionAttribute(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+        public DialogResult ShowDialog()
+        {
+            EnableWindow(this.Handle, false);
+            //System.Windows.Threading.DispatcherFrame
+            //DispatcherFrame frame = new DispatcherFrame();
+
+            this.Closed += delegate
+            {
+                EnableWindow(this.Handle, true);
+                //frame.Continue = false;
+            };
+
+            Show();
+            //Dispatcher.PushFrame(frame);
+            return DialogResult;
+        }
+        //  private Label lblError;
+        //  private OpenFileDialog ofdEXE;
+        //  private ContextMenuStrip cmsPicApp;
+        //  private ToolStripMenuItem RestoreToolStripMenuItem;
+        //  private ToolStripMenuItem MoveToolStripMenuItem;
+        //  private ToolStripMenuItem SizeToolStripMenuItem;
+        //  private ToolStripMenuItem MinimizeToolStripMenuItem;
+        //  private ToolStripMenuItem MaximizeToolStripMenuItem;
+        //  private ToolStripSeparator ToolStripSeparator1;
+        //  private ToolStripMenuItem CloseToolStripMenuItem;
         private Timer pullbs;
         private Timer pullbottom;
         private Timer pullside;
@@ -466,5 +484,7 @@ namespace libProChic
         public Panel tops;
         public PictureBox programIcon;
         public Panel GuestArea;
+        [DllImport("user32")]
+        internal static extern bool EnableWindow(IntPtr hwnd, bool bEnable);
     }
 }
