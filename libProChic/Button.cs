@@ -37,12 +37,25 @@ namespace libProChic
                 base.MouseDown += Button_MouseDown;
                 base.MouseClick += Button_MouseClick;
                 base.Click += Button_Click;
+                base.KeyDown += Button_KeyDown;
+                base.KeyUp += Button_KeyUp;
                 Invalidate();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
+        }
+        private void Button_KeyUp(object sender, KeyEventArgs e)
+        {
+            blnPressed = false;
+            KeyUp?.Invoke(this, e);
+        }
+        private void Button_KeyDown(object sender, KeyEventArgs e)
+        {
+            blnPressed = (e.KeyCode==Keys.Enter || e.KeyCode==Keys.Space);
+            Invalidate();
+            KeyDown?.Invoke(this, e);
         }
         private void Button_MouseDown(object sender, MouseEventArgs e)
         {
@@ -180,9 +193,11 @@ namespace libProChic
                 return blnHeld;
             }
         }
-        public new event MouseEventHandler MouseUp;
+        public new event KeyEventHandler KeyUp = new KeyEventHandler((e, a) => { });
+        public new event KeyEventHandler KeyDown = new KeyEventHandler((e, a) => { });
+        public new event MouseEventHandler MouseUp = new MouseEventHandler((e, a) => { });
         public new event MouseEventHandler MouseClick = new MouseEventHandler((e, a) => { });
-        public new  event MouseEventHandler MouseDown;
+        public new  event MouseEventHandler MouseDown = new MouseEventHandler((e, a) => { });
         public new event EventHandler Click = new EventHandler((e, a) => { });
         
     }
