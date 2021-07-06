@@ -89,7 +89,7 @@ namespace ProChic4._8
             foreach(ConfigGroup cGrp in conMenu.GetAllConfigsGroup()) {
                 if (cGrp.Name==("Image")) {                  
                 }else if (cGrp.Name == "Split"){
-                    menAppLaunch.Items.Add(new ToolStripSeparator());
+                    tsmiRoot.DropDownItems.Add(new ToolStripSeparator());
                 }else{
                     menAppLaunch.Items.Add(BuildMenu(cGrp));
                 }
