@@ -9,38 +9,40 @@ namespace libProChic
   public  class ConfigHelper
     {
         private List<ConfigGroup> winINI { get; set; } = new List<ConfigGroup>();            //Variable that will hold each config line
-        private String fileLoc = "";         //File Location of the Config File        
-        public ConfigHelper(string fileName){
-            try
-            {
-                if (!File.Exists(fileName)) File.Create(fileName);      //If file doesn't exist, then create it
-            }catch{
-                throw new Exception("File can't be created");       //Errors out if folder isn't created or doesn't have permissions
-            }
+        private String fileLoc = "";         //File Location of the Config File   
+        FileSystemWatcher fsw;       //Creates FileWatcher to update file as needed
+        public ConfigHelper(String fileName):this(fileName,true)
+        {
+
+        }
+        public ConfigHelper(string fileName,Boolean autoUpdate){
             fileLoc = fileName;            //If does then Saves the config file location
          //  Console.WriteLine(Path.GetDirectoryName(fileName));
              updateConfig();     //Adds contents of config to WinINI
-           FileSystemWatcher fsw = new FileSystemWatcher(Path.GetDirectoryName(fileName));        //Creates FileWatcher to update file as needed
-           //fsw.WaitForChanged(WatcherChangeTypes.Changed);
-           fsw.EnableRaisingEvents = true;     //Enables FSW to raise events
-           fsw.Changed += fsw_Changed;         //Adds method to be exe when event is raised
+            fsw = new FileSystemWatcher(Path.GetDirectoryName(fileName));
+            fsw.EnableRaisingEvents = true;     //Enables FSW to raise events
+            AutoRefresh = autoUpdate;
         }
         private void fsw_Changed(object sender, FileSystemEventArgs e){
             updateConfig(); //When Config is updated externally, then update Config
          if (ConfigUpdated !=null)   ConfigUpdated(sender, e);  //If possible raise ConfigUpdated so that other classes can update needed components
         }
-        public String[] ReadAllLines(String filepath)   //Method that reads a file even if another process is also reading it and returns it as an Array
-        {
-            FileStream logFileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            StreamReader logFileReader = new StreamReader(logFileStream);
-            List<String> line = new List<string>();
-            while (!logFileReader.EndOfStream)
-            {
-                line.Add(logFileReader.ReadLine());
+        private Boolean auto = true;
+        public Boolean AutoRefresh { get { return auto; } set { auto = value; if (auto) fsw.Changed += fsw_Changed; else fsw.Changed -= fsw_Changed; } }     //Adds/Removes method to be exe when event is raised } }
+        public String[] ReadAllLines(String filepath) {   //Method that reads a file even if another process is also reading it and returns it as an Array
+            try {
+                FileStream logFileStream = new FileStream(filepath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);      //If file doesn't exist, then create it or just open it
+                StreamReader logFileReader = new StreamReader(logFileStream);
+                List<String> line = new List<string>();
+                while (!logFileReader.EndOfStream){
+                    line.Add(logFileReader.ReadLine());
+                }
+                logFileReader.Close();
+                logFileStream.Close();
+                return line.ToArray();
+            } catch {
+                throw new Exception("File can't be created");       //Errors out if folder isn't created or doesn't have permissions
             }
-            logFileReader.Close();
-            logFileStream.Close();
-            return line.ToArray();
         }
         private void updateConfig(){
             String[] fil = ReadAllLines(fileLoc);     //Reads config file and places it in String varible fil
@@ -93,8 +95,17 @@ namespace libProChic
                 File.WriteAllText(fileLoc, prepareFile());
             }
         }
+        public   void Save(){
+            File.WriteAllText(fileLoc, prepareFile());
+        }
         public void SetConfig(String group, String configName, String newValue){
             GetConfigGroup(group).Item(configName).Setting = newValue;      //Finds Group, then Config and sets new value
+        }
+        public void SetConfig(String group, String configName, String newValue,Boolean createIfNotExist)
+        {
+            if (createIfNotExist && !Exists(group)) AddGroup(group);
+            ConfigGroup grp = GetConfigGroup(group);    //Finds group
+            if (createIfNotExist && grp.Contains(configName) == -1) grp.Add(new Config(configName+"="+newValue));else  grp.Item(configName).Setting = newValue;      //Finds Config (or creates it), and sets new value
         }
         public Config GetConfig(string group, string value2Find){
             return GetConfigGroup(group).Item(value2Find);
