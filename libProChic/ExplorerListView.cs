@@ -10,61 +10,65 @@ namespace libProChic{
     public class ExplorerListView : ListView{
         public Image addImage(string strPath, string strCurrentDir){
             string strFilPath = strPath;
-            try{
-                if (System.IO.Directory.Exists(strPath) == true && (new DirectoryInfo(strPath)).Name.EndsWith("‰ƒ"))//DrivePath
-                    return DriveIcon(strPath);
-                if (System.IO.Directory.Exists(strPath) == true && strPath == strCurrentDir)//Open Directory
-                    return com.prepareImage(Bitmap.FromHicon(OSIco[68].Handle), FollowPallet);
-                if (System.IO.Directory.Exists(strPath) == true && strPath != strCurrentDir)//Directory
-                    return com.prepareImage(Bitmap.FromHicon(OSIco[69].Handle), FollowPallet);
-                Int32 intIconIndex;
-                if (strPath.Contains(',') && Int32.TryParse(strPath.Split(',').Last(), out intIconIndex))//Icon Extraction
-                    return Bitmap.FromHicon(TsudaKageyu.IconUtil.Split(new Icon(strPath.Split(',')[0]))[intIconIndex].Handle);//, true);
-                if (!System.IO.File.Exists(strPath))//Error
-                    return com.prepareImage(Bitmap.FromHicon(OSIco[52].Handle), FollowPallet);
-                if (strPath.EndsWith("lnk", true, System.Globalization.CultureInfo.CurrentUICulture))
+            try
+            {
+                if (OSIco != null)
                 {
-                    Bitmap ink = new Bitmap(1, 1);
-                    Graphics g = Graphics.FromImage(ink);
-                    ShortCut lnk = new ShortCut(strPath);
-                    if (ink.Width + ink.Height == 2)
-                        ink = new Bitmap(addImage(com.toSystemPath(lnk.TargetFile), ""), 32, 32);
-                    if (!(File.ReadAllLines(strFilPath).Count() >= 5 && File.ReadAllLines(strFilPath)[4] == "Sys"))
-                        g.DrawImage(Bitmap.FromHicon(OSIco[29].Handle), 0, ink.Height - OSIco[29].Height);
-                    return com.prepareImage(ink, FollowPallet);
+                    if (System.IO.Directory.Exists(strPath) == true && (new DirectoryInfo(strPath)).Name.EndsWith("‰ƒ"))//DrivePath
+                        return DriveIcon(strPath);
+                    if (System.IO.Directory.Exists(strPath) == true && strPath == strCurrentDir)//Open Directory
+                        return com.prepareImage(Bitmap.FromHicon(OSIco[68].Handle), FollowPallet);
+                    if (System.IO.Directory.Exists(strPath) == true && strPath != strCurrentDir)//Directory
+                        return com.prepareImage(Bitmap.FromHicon(OSIco[69].Handle), FollowPallet);
+                    Int32 intIconIndex;
+                    if (strPath.Contains(',') && Int32.TryParse(strPath.Split(',').Last(), out intIconIndex))//Icon Extraction
+                        return Bitmap.FromHicon(TsudaKageyu.IconUtil.Split(new Icon(strPath.Split(',')[0]))[intIconIndex].Handle);//, true);
+                    if (!System.IO.File.Exists(strPath))//Error
+                        return com.prepareImage(Bitmap.FromHicon(OSIco[52].Handle), FollowPallet);
+                    if (strPath.EndsWith("lnk", true, System.Globalization.CultureInfo.CurrentUICulture))
+                    {
+                        Bitmap ink = new Bitmap(1, 1);
+                        Graphics g = Graphics.FromImage(ink);
+                        ShortCut lnk = new ShortCut(strPath);
+                        if (ink.Width + ink.Height == 2)
+                            ink = new Bitmap(addImage(com.toSystemPath(lnk.TargetFile), ""), 32, 32);
+                        if (!(File.ReadAllLines(strFilPath).Count() >= 5 && File.ReadAllLines(strFilPath)[4] == "Sys"))
+                            g.DrawImage(Bitmap.FromHicon(OSIco[29].Handle), 0, ink.Height - OSIco[29].Height);
+                        return com.prepareImage(ink, FollowPallet);
+                    }
+                    if (strPath.EndsWith("U95exe", true, System.Globalization.CultureInfo.CurrentUICulture) || strPath.EndsWith("U95com", true, System.Globalization.CultureInfo.CurrentUICulture))
+                        return null;// Properties.Resources.Attention;
+                    if ((ViewType == ExplorerType.ControlPanel && strPath.EndsWith("cpl", true, System.Globalization.CultureInfo.CurrentUICulture)) || strPath.EndsWith("exe", true, System.Globalization.CultureInfo.CurrentUICulture))
+                    {
+                        TsudaKageyu.IconExtractor i = new TsudaKageyu.IconExtractor(strPath); // addImage(CDrivePath & File.ReadAllLines(strPath).First, "")
+                                                                                              // MessageBox.Show(strPath)
+                        if (i.Count > 0)
+                            return com.prepareImage(i.GetIcon(i.Count - 1).ToBitmap(), FollowPallet);
+                        else
+                            return com.prepareImage(Bitmap.FromHicon(OSIco[70].Handle), FollowPallet);  // Return setSetting.OSIco(Int(ReadAllLines(strPath).Last)).ToBitmap
+                    }
+                    if (strPath.EndsWith(".U95ico", true, System.Globalization.CultureInfo.CurrentUICulture))
+                        return com.prepareImage(strPath);
+                    if (strPath.EndsWith(".txt", true, System.Globalization.CultureInfo.CurrentUICulture))
+                        return com.prepareImage(Bitmap.FromHicon(OSIco[42].Handle), FollowPallet);
+                    if (strPath.EndsWith(".msi", true, System.Globalization.CultureInfo.CurrentUICulture))
+                        return com.prepareImage(Bitmap.FromHicon(OSIco[46].Handle), FollowPallet);
+                    return com.prepareImage(Bitmap.FromHicon(OSIco[0].Handle), FollowPallet);
                 }
-                if (strPath.EndsWith("U95exe", true, System.Globalization.CultureInfo.CurrentUICulture) || strPath.EndsWith("U95com", true, System.Globalization.CultureInfo.CurrentUICulture))
-                    return null;// Properties.Resources.Attention;
-                if ((ViewType == ExplorerType.ControlPanel && strPath.EndsWith("cpl", true, System.Globalization.CultureInfo.CurrentUICulture)) || strPath.EndsWith("exe", true, System.Globalization.CultureInfo.CurrentUICulture))
-                {
-                    TsudaKageyu.IconExtractor i = new TsudaKageyu.IconExtractor(strPath); // addImage(CDrivePath & File.ReadAllLines(strPath).First, "")
-                                                                                          // MessageBox.Show(strPath)
-                    if (i.Count > 0)
-                        return com.prepareImage(i.GetIcon(i.Count - 1).ToBitmap(), FollowPallet);
-                    else
-                        return com.prepareImage(Bitmap.FromHicon(OSIco[70].Handle), FollowPallet);  // Return setSetting.OSIco(Int(ReadAllLines(strPath).Last)).ToBitmap
-                }
-                if (strPath.EndsWith(".U95ico", true, System.Globalization.CultureInfo.CurrentUICulture))
-                    return com.prepareImage(strPath);
-                if (strPath.EndsWith(".txt", true, System.Globalization.CultureInfo.CurrentUICulture))
-                    return com.prepareImage(Bitmap.FromHicon(OSIco[42].Handle), FollowPallet);
-                if (strPath.EndsWith(".msi", true, System.Globalization.CultureInfo.CurrentUICulture))
-                    return com.prepareImage(Bitmap.FromHicon(OSIco[46].Handle), FollowPallet);
-                return com.prepareImage(Bitmap.FromHicon(OSIco[0].Handle), FollowPallet);
             }
             catch (Exception ex)
             {
-                if ((OSIco != null) && OSIco.Count() < 1)
-                {
-                    SHFILEINFO shInfo = new SHFILEINFO(); // Create and Instantiate File Info Object
-                    shInfo.szDisplayName = new string('\0', 260); // Get Display Name
-                    shInfo.szTypeName = new string('\0', 80); // Get File Type
-                    IntPtr hIcon = SHGetFileInfo(strFilPath, 0, shInfo, Marshal.SizeOf(shInfo), 256 | 1); // Get File Type Icon Based On File Association
-                    return com.prepareImage(Icon.FromHandle(shInfo.hIcon).ToBitmap(), FollowPallet); // 
-                }
                 Debug.WriteLine(ex.ToString());
-                return null;//Properties.Resources.Error95;
             }
+            if ((OSIco != null) && OSIco.Count() < 1)
+            {
+                SHFILEINFO shInfo = new SHFILEINFO(); // Create and Instantiate File Info Object
+                shInfo.szDisplayName = new string('\0', 260); // Get Display Name
+                shInfo.szTypeName = new string('\0', 80); // Get File Type
+                IntPtr hIcon = SHGetFileInfo(strFilPath, 0, shInfo, Marshal.SizeOf(shInfo), 256 | 1); // Get File Type Icon Based On File Association
+                return com.prepareImage(Icon.FromHandle(shInfo.hIcon).ToBitmap(), FollowPallet); // 
+            }
+            else return null;
         }
         public Boolean AutoDispose = false;
         public bool AutoRefreshFolder { get; set; } = true;
@@ -76,7 +80,7 @@ namespace libProChic{
                 return base.BackgroundImage;
             }
         }
-        private MasterClass com = new MasterClass();
+        private MasterClass com;
         private System.ComponentModel.IContainer components;
         private string dir = "";
         public string Directory
@@ -186,14 +190,14 @@ namespace libProChic{
                     return System.Diagnostics.FileVersionInfo.GetVersionInfo(filePath).ProductName;
                 else
                 {
-                   if (Boolean.Parse(foldOptions.GetConfig("View", "HideDosExt").Setting)) return System.IO.Path.GetFileName(filePath); else return System.IO.Path.GetFileNameWithoutExtension(filePath);
+                   if (foldOptions != null && Boolean.Parse(foldOptions.GetConfig("View", "HideDosExt").Setting)) return System.IO.Path.GetFileName(filePath); else return System.IO.Path.GetFileNameWithoutExtension(filePath);
                 }
             }
             else if (System.IO.Directory.Exists(filePath))
             {
                 return Path.GetDirectoryName(filePath).Replace("‰", ":").Replace("ƒ", @"\");
             }
-            throw new Exception("File or Directory could not be found");
+            throw new Exception(filePath + " could not be found");
         }
         private void fswExplorer_Changed(object sender, FileSystemEventArgs e)
         {
@@ -202,11 +206,24 @@ namespace libProChic{
             if (AutoRefreshFolder)
                 RefreshFolder();
         }
-        public ExplorerListView() : base() 
+        public ExplorerListView(String mode) : this() 
         {
+            com = new MasterClass();
             foldOptions = new ConfigHelper(com.toSystemPath(com.Config.GetConfig("Explorer", "ConfigLoc").Setting));
             //pipeServer = new NamedPipeServerStream("ProjectI2padamsNet");
+            elvMode = mode;
         }
+        public ExplorerListView() : base()
+        {
+            this.MouseDoubleClick += thisDoubleClick;
+        }
+        private  void thisDoubleClick(Object sender, EventArgs e)
+        {
+            if (elvMode == "StandAlone" && FocusedItem != null && File.Exists(FocusedItem.Tag.ToString())) FileOpened?.Invoke(FocusedItem.Tag.ToString());
+        }
+        public event FileOpenedHandler FileOpened;
+        public delegate void FileOpenedHandler(String filePath);
+        private String elvMode = "StandAlone";
         public bool OnErrorGoToParentDirectory { get; set; } = false;
         private NamedPipeServerStream pipeServer = new NamedPipeServerStream("ProjectI2padamsNet",PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances);     // Based on code from https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-use-anonymous-pipes-for-local-interprocess-communication
         private StreamWriter sw;
@@ -253,6 +270,9 @@ namespace libProChic{
             {
                 if ((Items != null)) Items.Clear();
                 if (SmallImageList != null) SmallImageList.Images.Clear();
+                if (this.DesignMode) return;//System.ComponentModel.LicenseManager.UsageMode == System.ComponentModel.LicenseUsageMode.Designtime
+
+                //MessageBox.Show(this.DesignMode.ToString());
                 if (System.IO.Directory.Exists(dir))
                 {
                     if (display == DisplayType.Directories || display == DisplayType.DirectoriesAndFiles)
@@ -386,7 +406,8 @@ namespace libProChic{
         public Bitmap Wallpaper { get { return wall; } set {wall = value; if (upDesk) RefreshImage("Wall"); } }
         public ImageLayout WallpaperLayout { get { return wallMode; } set { wallMode = value; if (upDesk) RefreshImage("WallLayout"); } }
         private ImageLayout wallMode = ImageLayout.None;
-    }
+    }   
+
     public class ShortCut
     {  
         private IWshRuntimeLibrary.IWshShortcut lnk;

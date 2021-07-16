@@ -11,7 +11,7 @@ namespace libProChic
     public class ListView : System.Windows.Forms.ListView
     {
         private System.ComponentModel.IContainer components;
-        private MasterClass com = new MasterClass();
+        private MasterClass com;
 
         public ListView() : base()
         {
@@ -25,6 +25,10 @@ namespace libProChic
             {
                 Console.WriteLine(ex.ToString());
             }
+        }
+        public ListView(String mode) : base()
+        {
+            com = new MasterClass();
         }
         protected override void Dispose(bool disposing)
         {
@@ -58,13 +62,16 @@ namespace libProChic
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-                OwnerDraw = true;
             DoubleBuffered = true;
-            SelectedColor = com.convertColour(com.Config.GetConfig("Colors", "Hilight").Setting);
-            SelectedTextColor = com.convertColour(com.Config.GetConfig("Colors", "HilightText").Setting);
-            BackColor = com.convertColour(com.Config.GetConfig("Colors", "Window").Setting);
-            ForeColor = com.convertColour(com.Config.GetConfig("Colors", "WindowText").Setting);
-            this.DrawItem += mybase_DrawItem;
+            if (com != null)
+            {
+                OwnerDraw = true;
+                SelectedColor = com.convertColour(com.Config.GetConfig("Colors", "Hilight").Setting);
+                SelectedTextColor = com.convertColour(com.Config.GetConfig("Colors", "HilightText").Setting);
+                BackColor = com.convertColour(com.Config.GetConfig("Colors", "Window").Setting);
+                ForeColor = com.convertColour(com.Config.GetConfig("Colors", "WindowText").Setting);
+                this.DrawItem += mybase_DrawItem;
+            }
             //this.DrawSubItem += mybase_DrawItem;
             GridLines = true;
         }
