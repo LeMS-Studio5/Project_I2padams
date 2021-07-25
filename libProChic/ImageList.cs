@@ -21,6 +21,8 @@ namespace libProChic
             {
                 if (disposing)
                 {
+                    /*System.Windows.Forms.ImageList.ImageCollection i = new System.Windows.Forms.ImageList.ImageCollection();
+                    */
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
@@ -45,24 +47,32 @@ namespace libProChic
         }
         public ImageAlbum Images { get; } = new ImageAlbum();
     }
-    public class ImageAlbum 
+    public class ImageAlbum
     {
-        private List<Image> ilst = new List<Image>();
+        private Dictionary<String, Image> ilst = new Dictionary<string, Image>();
+        private Dictionary<Int32, String> indexRef = new Dictionary<Int32, String>();
+        private Int32 nextIndex = 0;
         public void Add(Image img)
         {
-            ilst.Add(img);
         }
         public void Add(string fil, Image img)
         {
-            Add(img);
+            ilst.Add(fil,img);
+            indexRef.Add(nextIndex, fil);
+            nextIndex++;
         }
         public void Clear()
         {
             ilst.Clear();
+            indexRef.Clear();
         }
         public int Count()
         {
             return ilst.Count;
+        }
+        public Boolean ContainsKey(String key)
+        {
+            return ilst.ContainsKey(key);
         }
         public Boolean Empty()
         {
@@ -70,12 +80,12 @@ namespace libProChic
         }
         public Image Get(int index)
         {
-            return ilst[index];
+            return ilst[indexRef[index]];
         }
         public void RemoveAt(int index)
         {
-            ilst.RemoveAt(index);
+            ilst.Remove(indexRef[index]);
+            indexRef.Remove(index);
         }
-
     }
 }
