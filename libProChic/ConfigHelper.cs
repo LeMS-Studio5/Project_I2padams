@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -9,25 +10,24 @@ namespace libProChic
   public  class ConfigHelper
     {
         private List<ConfigGroup> winINI { get; set; } = new List<ConfigGroup>();            //Variable that will hold each config line
-        private String fileLoc = "";         //File Location of the Config File   
+        private String fileLoc { get; set; } = "";         //File Location of the Config File   
         FileSystemWatcher fsw;       //Creates FileWatcher to update file as needed
-        public ConfigHelper(String fileName):this(fileName,true)
-        {
-
-        }
-        public ConfigHelper(string fileName,Boolean autoUpdate){
+        public ConfigHelper(String fileName):this(fileName,true) {        }
+        public ConfigHelper(string fileName,Boolean autoUpdate) {
+            Debug.WriteLine(fileName);
             fileLoc = fileName;            //If does then Saves the config file location
-         //  Console.WriteLine(Path.GetDirectoryName(fileName));
-             updateConfig();     //Adds contents of config to WinINI
-            fsw = new FileSystemWatcher(Path.GetDirectoryName(fileName));
-            fsw.EnableRaisingEvents = true;     //Enables FSW to raise events
-            AutoRefresh = autoUpdate;
+            if (File.Exists(fileName)){
+                updateConfig();     //Adds contents of config to WinINI if fileName exist
+                fsw = new FileSystemWatcher(Path.GetDirectoryName(fileName));
+                fsw.EnableRaisingEvents = true;     //Enables FSW to raise events
+                AutoRefresh = autoUpdate;
+            }
         }
         private void fsw_Changed(object sender, FileSystemEventArgs e){
-            updateConfig(); //When Config is updated externally, then update Config
+          if (auto)  updateConfig(); //When Config is updated externally, then update Config
          if (ConfigUpdated !=null)   ConfigUpdated(sender, e);  //If possible raise ConfigUpdated so that other classes can update needed components
         }
-        private Boolean auto = true;
+        private Boolean auto = false;
         public Boolean AutoRefresh { get { return auto; } set { auto = value; if (auto) fsw.Changed += fsw_Changed; else fsw.Changed -= fsw_Changed; } }     //Adds/Removes method to be exe when event is raised } }
         public String[] ReadAllLines(String filepath) {   //Method that reads a file even if another process is also reading it and returns it as an Array
             try {
@@ -40,8 +40,8 @@ namespace libProChic
                 logFileReader.Close();
                 logFileStream.Close();
                 return line.ToArray();
-            } catch {
-                throw new Exception("File can't be created");       //Errors out if folder isn't created or doesn't have permissions
+            } catch(Exception e) {
+                throw new Exception("File can't be created/n" +e.ToString());       //Errors out if folder isn't created or doesn't have permissions
             }
         }
         private void updateConfig(){
