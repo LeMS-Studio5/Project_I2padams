@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 namespace libProChic{
     public class ExplorerListView : ListView{
-        public Image addImage(string strPath, string strCurrentDir){
+        public Bitmap addImage(string strPath, string strCurrentDir){
             string strFilPath = strPath;
             try
             {
@@ -60,16 +60,40 @@ namespace libProChic{
             {
                 Debug.WriteLine(ex.ToString());
             }
-            if ((OSIco != null) && OSIco.Count() < 1)
+            if (strFilPath.EndsWith(".jpg",StringComparison.CurrentCultureIgnoreCase)) return ScaleImage(strFilPath,48,48);
+            if ((OSIco == null) || OSIco.Count() < 1)
             {
-                SHFILEINFO shInfo = new SHFILEINFO(); // Create and Instantiate File Info Object
-                shInfo.szDisplayName = new string('\0', 260); // Get Display Name
-                shInfo.szTypeName = new string('\0', 80); // Get File Type
-                IntPtr hIcon = SHGetFileInfo(strFilPath, 0, shInfo, Marshal.SizeOf(shInfo), 256 | 1); // Get File Type Icon Based On File Association
-                return com.prepareImage(Icon.FromHandle(shInfo.hIcon).ToBitmap(), FollowPallet); // 
+                return (Bitmap)FileIcon.GetLargeIcon(strFilPath);
             }
             else return null;
         }
+        public static Bitmap ScaleImage(String filePath, int maxWidth, int maxHeight)
+        {
+            return ScaleImage(new Bitmap(filePath), maxWidth, maxHeight);
+        }
+        public static Bitmap ScaleImage(Bitmap image, int maxWidth, int maxHeight)
+        {
+            double ratioX = (double)maxWidth / image.Width;
+            double ratioY = (double)maxHeight / image.Height;
+            int ratio = Math.Min(ratioX, ratioY);
+
+            int newWidth = (int)(image.Width * ratio);
+            int newHeight = (int)(image.Height * ratio);
+
+            Bitmap newImage = new Bitmap(maxWidth, maxHeight);
+            using (Graphics graphics = Graphics.FromImage(newImage))
+            {
+                // Calculate x and y which center the image
+                int y = (maxHeight / 2) - newHeight / 2;
+                int x = (maxWidth / 2) - newWidth / 2;
+
+                // Draw image on x and y with newWidth and newHeight
+                graphics.DrawImage(image, x, y, newWidth, newHeight);
+            }
+            System.GC.Collect();
+            return newImage;
+        }
+
         public Boolean AutoDispose = false;
         public bool AutoRefreshFolder { get; set; } = true;
         public new Color BackColor { get { return base.BackColor; } set { base.BackColor = value; if (upDesk) RefreshImage("col"); } }
@@ -148,7 +172,7 @@ namespace libProChic{
                 base.Dispose(disposing);
             }
         }
-        private Image DriveIcon(string path)
+        private Bitmap DriveIcon(string path)
         {
             if (File.ReadAllLines(path + @"\(_)drive.info")[0] == "HD")
                 return OSIco[8].ToBitmap();
@@ -190,7 +214,7 @@ namespace libProChic{
                     return System.Diagnostics.FileVersionInfo.GetVersionInfo(filePath).ProductName;
                 else
                 {
-                   if (foldOptions != null && Boolean.Parse(foldOptions.GetConfig("View", "HideDosExt").Setting)) return System.IO.Path.GetFileName(filePath); else return System.IO.Path.GetFileNameWithoutExtension(filePath);
+                   if (com==null||(foldOptions != null && Boolean.Parse(foldOptions.GetConfig("View", "HideDosExt").Setting))) return System.IO.Path.GetFileName(filePath); else return System.IO.Path.GetFileNameWithoutExtension(filePath);
                 }
             }
             else if (System.IO.Directory.Exists(filePath))
@@ -270,6 +294,7 @@ namespace libProChic{
             {
                 if ((Items != null)) Items.Clear();
                 if (SmallImageList != null) SmallImageList.Images.Clear();
+                if (LargeImageList != null) LargeImageList.Images.Clear();
                 if (this.DesignMode) return;//System.ComponentModel.LicenseManager.UsageMode == System.ComponentModel.LicenseUsageMode.Designtime
 
                 //MessageBox.Show(this.DesignMode.ToString());
@@ -277,11 +302,13 @@ namespace libProChic{
                 {
                     if (display == DisplayType.Directories || display == DisplayType.DirectoriesAndFiles)
                     {
-                        foreach (string fil in System.IO.Directory.GetDirectories(dir)) // Get Files In Folder
+                        foreach (string fil in System.IO.Directory.GetDirectories(dir).OrderBy(f => f)) // Get Files In Folder
                         {                           
                             try
                             {
                                 SmallImageList.Images.Add(fil, addImage(fil, dir));
+                                LargeImageList.Images.Add(fil, addImage(fil, dir));
+                                System.GC.Collect();
                                 Int64 intTotal = 0;
                                 foreach (var SizeFile in System.IO.Directory.GetFiles(fil, "*.*", System.IO.SearchOption.AllDirectories))
                                 {
@@ -304,17 +331,19 @@ namespace libProChic{
                     }
                     if ((display == DisplayType.DirectoriesAndFiles || display == DisplayType.Files) && System.IO.Directory.Exists(dir))
                     {
-                        foreach (string fil in System.IO.Directory.GetFiles(dir, filt)) // Get Files In Folder
+                        foreach (string fil in System.IO.Directory.GetFiles(dir, filt).OrderBy(f=>f)) // Get Files In Folder
                         {
                            
                             if (fil != null && !System.IO.Path.GetFileName(fil).StartsWith("(_)"))
                             {
                                 SmallImageList.Images.Add(fil, addImage(fil, dir));
+                                LargeImageList.Images.Add(fil, addImage(fil, dir));
+                                System.GC.Collect();
                                 Items.Add(FormatFileName(fil), fil);
                                 Items[Items.Count - 1].SubItems.Add(((new FileInfo(fil)).Length / FileSizeType.GetHashCode()) + " " + FileSizeType.ToString());
                                 Items[Items.Count - 1].Tag = fil;
                                 Items[Items.Count - 1].ImageKey = fil;
-                                Items[Items.Count - 1].ImageIndex = Items.Count - 1;
+                                //Items[Items.Count - 1].ImageIndex = Items.Count - 1;
                                 Items[Items.Count - 1].SubItems.Add(System.IO.File.GetLastWriteTime(fil).ToString());
                             }
                         }
@@ -373,8 +402,13 @@ namespace libProChic{
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
             public string szTypeName;
         }
-        [System.Runtime.InteropServices.DllImport("shell32.dll")]
-        private static extern IntPtr SHGetFileInfo(string pszPath, int dwFileAttributes, SHFILEINFO psfi, int cbFileInfo, int uFlags); // Retrieves information about an object in the file system, such as a file, folder, directory, or drive root
+        // The signature of SHGetFileInfo (located in Shell32.dll)
+        [DllImport("Shell32.dll")]
+        public static extern int SHGetFileInfo(string pszPath, int dwFileAttributes, ref SHFILEINFO psfi, int cbFileInfo, uint uFlags);
+
+        [DllImport("Shell32.dll")]
+        public static extern int SHGetFileInfo(IntPtr pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, int cbFileInfo, uint uFlags);
+        // Retrieves information about an object in the file system, such as a file, folder, directory, or drive root
         public enum SizeType
         {
             Bytes = 1,
