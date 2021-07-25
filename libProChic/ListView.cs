@@ -17,6 +17,8 @@ namespace libProChic
         {
             try
             {
+                SmallImageList = new System.Windows.Forms.ImageList();
+                LargeImageList = new System.Windows.Forms.ImageList();
                 //   Console.WriteLine(Items == null);
                 InitializeComponent();
                 Invalidate();
@@ -56,16 +58,16 @@ namespace libProChic
         }
         public Color SelectedColor { get; set; }
         public Color SelectedTextColor { get; set; }
-        public new ImageList LargeImageList { get; set; } = new ImageList();
-        public new ImageList SmallImageList { get; set; } = new ImageList();
-        public Size ImageSize { get; set; } = new Size(32, 32);
+        //public new System.Windows.Forms.ImageList LargeImageList { get; set; } = new System.Windows.Forms.ImageList();
+        //public new System.Windows.Forms.ImageList SmallImageList { get; set; } = new System.Windows.Forms.ImageList();
+        public Size LargeImageListSize { get { return LargeImageList.ImageSize; } set { LargeImageList.ImageSize = value; } }
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
             DoubleBuffered = true;
             if (com != null)
             {
-                OwnerDraw = true;
+                OwnerDraw = false;
                 SelectedColor = com.convertColour(com.Config.GetConfig("Colors", "Hilight").Setting);
                 SelectedTextColor = com.convertColour(com.Config.GetConfig("Colors", "HilightText").Setting);
                 BackColor = com.convertColour(com.Config.GetConfig("Colors", "Window").Setting);
@@ -115,7 +117,7 @@ namespace libProChic
 
                 // Scale and position the image.
                 e.Graphics.ScaleTransform(scale, scale);
-                e.Graphics.TranslateTransform(left,left+(e.ItemIndex*((ImageSize.Height+30)*scale)) ,System.Drawing.Drawing2D.MatrixOrder.Append);  //+ (e.Bounds.Height - img.Height * scale) /1
+                e.Graphics.TranslateTransform(left,left+(e.ItemIndex*((LargeImageListSize.Height+30)*scale)) ,System.Drawing.Drawing2D.MatrixOrder.Append);  //+ (e.Bounds.Height - img.Height * scale) /1
                                                                                                                                                              //
                                                                                                                                                              //         // Draw the image.
                 e.Graphics.DrawImage(com.prepareImage(img, true), 0, 0);
