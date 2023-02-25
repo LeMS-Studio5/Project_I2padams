@@ -1,0 +1,3 @@
+[submodule "lib-LeMS"]
+	path = lib-LeMS
+	url = https://github.com/LeMS-Studio5/lib-LeMS
