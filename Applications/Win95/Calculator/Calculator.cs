@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
-using libProChic;
+using libLeMS;
 namespace Calculator
 {
     public partial class formCalculator

@@ -1,4 +1,4 @@
-﻿using libProChic;
+﻿using libLeMS;
 
 namespace Notepad
 {

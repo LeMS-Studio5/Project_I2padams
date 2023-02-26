@@ -7,10 +7,10 @@ using System.Windows.Forms;
 
 namespace ProChic4._8
 {
-    class Panel_Item: libProChic.Button
+    class Panel_Item: libLeMS.Button
     {
         IntPtr appPtr;
-        libProChic.MasterClass com = new libProChic.MasterClass();
+        libLeMS.MasterClass com = new libLeMS.MasterClass();
         public Panel_Item(ref AppHolder app)
         {
             PictureBox pic = new PictureBox();

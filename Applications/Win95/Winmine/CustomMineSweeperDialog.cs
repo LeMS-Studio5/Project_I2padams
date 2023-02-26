@@ -1,5 +1,5 @@
 ﻿using System;
-using libProChic;
+using libLeMS;
 namespace WinMine
 {
     public partial class CustomMineSweeperDialog

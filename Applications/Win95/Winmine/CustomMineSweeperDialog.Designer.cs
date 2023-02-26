@@ -10,9 +10,9 @@
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.VisualBasic;
-    using libProChic;
+    using libLeMS;
 namespace WinMine{
-    public partial class CustomMineSweeperDialog : ProI2padamsShell
+    public partial class CustomMineSweeperDialog : Shell
     {
 
         // Form overrides dispose to clean up the component list.

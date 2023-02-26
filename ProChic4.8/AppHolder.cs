@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using libProChic;
+using libLeMS;
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace ProChic4._8
 {
-    class AppHolder : ProI2padamsShell
+    class AppHolder : Shell
     {
         private Rectangle siz = new Rectangle();
         private MasterClass com = new MasterClass();

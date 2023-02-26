@@ -32,9 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="libProChic">
-      <HintPath>..\..\..\libProChic\bin\Debug\libProChic.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -110,6 +107,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Wrong.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\lib-LeMS\libLeMS.csproj">
+      <Project>{52d9cf0f-fa7a-47ac-9559-91e099297734}</Project>
+      <Name>libLeMS</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,4 +1,4 @@
-﻿using libProChic;
+﻿using libLeMS;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -17,7 +17,6 @@ namespace ProChic4._8{
             {
                 UpdateResources("*.dll");
                 UpdateResources("*.exe");
-                Debug.WriteLine(com.FindClosestFromPallet(System.Drawing.Color.FromArgb(0,0,0,128)).ToString());
                 Desktop d = new Desktop();
                 this.Hide();
                 DialogResult result = d.ShowDialog();

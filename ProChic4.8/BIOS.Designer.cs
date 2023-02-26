@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.btnBegin = new libProChic.Button();
+            this.btnBegin = new libLeMS.Button();
             this.SuspendLayout();
             // 
             // btnBegin
@@ -62,6 +62,6 @@
 
         #endregion
 
-        private libProChic.Button btnBegin;
+        private libLeMS.Button btnBegin;
     }
 }

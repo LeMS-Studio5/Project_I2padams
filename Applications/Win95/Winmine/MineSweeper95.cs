@@ -1,5 +1,5 @@
 ﻿using System;
-using libProChic;
+using libLeMS;
 using System.Drawing;
 namespace WinMine
 {

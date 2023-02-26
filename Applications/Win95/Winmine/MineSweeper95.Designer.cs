@@ -10,7 +10,7 @@ using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualBasic;
-using libProChic;
+using libLeMS;
 
 namespace WinMine { 
 partial class MineSweeper95 : System.Windows.Forms.Form
