@@ -1,4 +1,4 @@
-﻿using libProChic;
+﻿using libLeMS;
 
 namespace ProChic4._8
 {
@@ -32,8 +32,8 @@ namespace ProChic4._8
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Desktop));
             this.panTaskBar = new System.Windows.Forms.Panel();
-            this.btnAppLauncher = new libProChic.Button();
-            this.elvDesktop = new libProChic.ExplorerListView();
+            this.btnAppLauncher = new libLeMS.Button();
+            this.elvDesktop = new libLeMS.ExplorerListView();
             this.tsmiRoot = new System.Windows.Forms.ToolStripMenuItem("Hello");
             this.panAppLaunch = new System.Windows.Forms.Panel();
             this.menAppLaunch = new MenuStrip();
@@ -75,9 +75,9 @@ namespace ProChic4._8
             this.elvDesktop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
             this.elvDesktop.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.elvDesktop.Directory = "";
-            this.elvDesktop.DisplayMode = libProChic.ExplorerListView.DisplayType.DirectoriesAndFiles;
+            this.elvDesktop.DisplayMode = libLeMS.ExplorerListView.DisplayType.DirectoriesAndFiles;
             this.elvDesktop.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.elvDesktop.FileSizeType = libProChic.ExplorerListView.SizeType.Bytes;
+            this.elvDesktop.FileSizeType = libLeMS.ExplorerListView.SizeType.Bytes;
             this.elvDesktop.Filter = "*.*";
             this.elvDesktop.FollowPallet = true;
             this.elvDesktop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
@@ -94,7 +94,7 @@ namespace ProChic4._8
             this.elvDesktop.UpdateDesktop = false;
             this.elvDesktop.UseCompatibleStateImageBehavior = false;
             this.elvDesktop.View = System.Windows.Forms.View.SmallIcon;
-            this.elvDesktop.ViewType = libProChic.ExplorerListView.ExplorerType.Desktop;
+            this.elvDesktop.ViewType = libLeMS.ExplorerListView.ExplorerType.Desktop;
             this.elvDesktop.Wallpaper = ((System.Drawing.Bitmap)(resources.GetObject("elvDesktop.Wallpaper")));
             this.elvDesktop.WallpaperLayout = System.Windows.Forms.ImageLayout.None;
             // 
@@ -166,9 +166,9 @@ namespace ProChic4._8
 
         #endregion
 
-        private libProChic.ExplorerListView elvDesktop;
+        private libLeMS.ExplorerListView elvDesktop;
         private System.Windows.Forms.Panel panTaskBar;
-        private libProChic.Button btnAppLauncher;
+        private libLeMS.Button btnAppLauncher;
         private System.Windows.Forms.Panel panAppLaunch;
         private MenuStrip menAppLaunch;
         private System.Windows.Forms.ToolStripMenuItem tsmiRoot;

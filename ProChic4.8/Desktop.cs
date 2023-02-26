@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using libProChic;
+using libLeMS;
 using System.IO;
 using System.IO.Pipes;
 using System.Diagnostics;
@@ -32,7 +32,7 @@ namespace ProChic4._8
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.ToString());
+                Debug.WriteLine("Desktop: Init: " + ex.ToString());
             }
         }
         private System.Threading.Thread thrdFileListener;
@@ -75,7 +75,7 @@ namespace ProChic4._8
               }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.ToString());
+                Debug.WriteLine("Desktop: Load: " + ex.ToString());
             }
         }
         private void MenuSeup()
@@ -139,7 +139,7 @@ namespace ProChic4._8
             }
             if (conGroup.Contains("IconResource") > -1)
             {
-                if (conGroup.Item("IconResource").Setting.Contains(",")) tsm.Image = elvDesktop.addImage(com.toSystemPath(conGroup.Item("IconResource").Setting),""); else tsm.Image =com.prepareImage(com.toSystemPath(conGroup.Item("IconResource").Setting));
+                if (conGroup.Item("IconResource").Setting.Contains(",")) tsm.Image = com.prepareImage(elvDesktop.addImage(com.toSystemPath(conGroup.Item("IconResource").Setting),""),true); else tsm.Image =com.prepareImage(com.toSystemPath(conGroup.Item("IconResource").Setting));
             }
             tsm.ImageScaling = ToolStripItemImageScaling.None;
             tsm.TextAlign = ContentAlignment.MiddleLeft;
@@ -167,7 +167,7 @@ namespace ProChic4._8
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.ToString());
+                Debug.WriteLine("Build Menu from Path: " + ex.ToString());
                 return null;
             }
         }
@@ -188,7 +188,7 @@ namespace ProChic4._8
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.ToString());
+                Debug.WriteLine("List Dirs: " + ex.ToString());
                 return null;
             }
         }
@@ -201,7 +201,7 @@ namespace ProChic4._8
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.ToString());
+                Debug.WriteLine("List Files: " + ex.ToString());
             }
             return null;
         }
@@ -264,18 +264,18 @@ namespace ProChic4._8
                     while (true)//temp != "ProChicSuspend" || temp!= "ProChicExit")
                     {
                             while ((temp = sr.ReadLine()) == "") ;
-                            Debug.WriteLineIf(temp!="",temp);
+                            Debug.WriteLineIf(temp!="","Came thru pipe: " + temp);
                         if (temp == "ProChicExit")
                         {
                             DialogResult = DialogResult.Cancel;
-                            Debug.WriteLine("CANCEL");
+                            Debug.WriteLine("Desktop: Shutting Down");
                             this.Close();
                             thrdFileListener.Abort();
                         }
                         else if (temp == "ProChicSuspend")
                         {
                             DialogResult = DialogResult.OK;
-                            Debug.WriteLine("OK");
+                            Debug.WriteLine("Desktop: Suspend");
                             this.Close();
                             thrdFileListener.Abort();
                         }
@@ -310,7 +310,7 @@ namespace ProChic4._8
                 newFocus = GetForegroundWindow();
                 if (currentFocus != newFocus && newFocus !=IntPtr.Zero)
                 {
-                    if (this.Handle == newFocus) Debug.WriteLine("Desktop has focus");
+                    if (this.Handle == newFocus) Debug.WriteLine("Active Desktop: Desktop has focus");
                     if (currentFocus != IntPtr.Zero && apps.ContainsKey(currentFocus)) apps[currentFocus].Focused = false;
                     if (currentFocus != IntPtr.Zero && panItems.ContainsKey(currentFocus)) panItems[currentFocus].Held = false;
                     currentFocus = newFocus;
