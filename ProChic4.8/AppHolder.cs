@@ -73,6 +73,7 @@ namespace ProChic4._8
                 TsudaKageyu.IconExtractor i = new TsudaKageyu.IconExtractor(pro.StartInfo.FileName);
                 // in
                 if (i.Count > 0) programIcon.Image = new Bitmap(i.GetIcon(i.Count - 1).ToBitmap(), 16, 16); else programIcon.Image = new Bitmap(com.prepareImage(com.toSystemPath(com.Config.GetConfig("windows", "GenericAppIco").Setting)), 16, 16); // New TsudaKageyu.IconUtil //pro.StartInfo.FileName).ToBitmap
+                id = pro.MainWindowHandle;
                  }
             catch (Exception ex) {
                 Debug.WriteLine(ex.ToString());
@@ -129,7 +130,6 @@ namespace ProChic4._8
             try
             {
                 System.Reflection.Assembly a = System.Reflection.Assembly.LoadFile(absolutePath);
-                // a.
                 return true;
             }
             catch (Exception ex)
