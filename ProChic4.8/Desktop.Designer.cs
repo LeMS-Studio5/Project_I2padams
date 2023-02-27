@@ -34,7 +34,6 @@ namespace ProChic4._8
             this.panTaskBar = new System.Windows.Forms.Panel();
             this.btnAppLauncher = new libLeMS.Button();
             this.elvDesktop = new libLeMS.ExplorerListView();
-            this.tsmiRoot = new System.Windows.Forms.ToolStripMenuItem("Hello");
             this.panAppLaunch = new System.Windows.Forms.Panel();
             this.menAppLaunch = new MenuStrip();
             this.picAppLaunch = new System.Windows.Forms.PictureBox();
@@ -110,21 +109,11 @@ namespace ProChic4._8
             this.panAppLaunch.TabIndex = 2;
             this.panAppLaunch.Visible = false;
             // 
-            // tsmiRoot
-            // 
-            this.tsmiRoot.Text = "Hello";
-            this.tsmiRoot.Image = ProChic4._8.Properties.Resources.app;
-            this.tsmiRoot.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.tsmiRoot.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.tsmiRoot.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.tsmiRoot.Alignment = System.Windows.Forms.ToolStripItemAlignment.Left;
-            this.tsmiRoot.Padding = new System.Windows.Forms.Padding(0);
-            // 
             // menAppLaunch
             // 
             this.picAppLaunch.Dock = System.Windows.Forms.DockStyle.Right;
             this.menAppLaunch.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.VerticalStackWithOverflow;
-            this.menAppLaunch.Items.Add(tsmiRoot);
+            //this.menAppLaunch.Items.Add(tsmiRoot);
             this.menAppLaunch.Location = new System.Drawing.Point(0, 0);
             this.menAppLaunch.Name = "menAppLaunch";
             this.menAppLaunch.Size = new System.Drawing.Size(193, 44);
@@ -171,7 +160,6 @@ namespace ProChic4._8
         private libLeMS.Button btnAppLauncher;
         private System.Windows.Forms.Panel panAppLaunch;
         private MenuStrip menAppLaunch;
-        private System.Windows.Forms.ToolStripMenuItem tsmiRoot;
         private System.Windows.Forms.PictureBox picAppLaunch;
     }
 }

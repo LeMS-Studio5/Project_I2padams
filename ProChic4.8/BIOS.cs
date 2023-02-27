@@ -8,7 +8,6 @@ namespace ProChic4._8{
         private MasterClass com = new MasterClass();
         public BIOS() {
             InitializeComponent();
-            Taskbar.Hide();
         }
 
         private void btnBegin_Click(object sender, EventArgs e)
@@ -19,6 +18,7 @@ namespace ProChic4._8{
                 UpdateResources("*.exe");
                 Desktop d = new Desktop();
                 this.Hide();
+                Taskbar.Hide();
                 DialogResult result = d.ShowDialog();
                 if (result == DialogResult.Cancel)
                 {
@@ -34,7 +34,7 @@ namespace ProChic4._8{
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Console.WriteLine("BIOS: " + ex.ToString());
             }
         }
         private void UpdateResources(String ext)
