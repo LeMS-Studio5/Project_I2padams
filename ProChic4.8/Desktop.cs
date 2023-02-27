@@ -70,7 +70,7 @@ namespace ProChic4._8
                 if (com.Config.GetConfig("Desktop", "TileWallpaper").Setting == "1") elvDesktop.WallpaperLayout = ImageLayout.Tile; else elvDesktop.WallpaperLayout = ImageLayout.Center;
                 elvDesktop.BackColor = com.convertColour(com.Config.GetConfig("Colors", "Background").Setting);
                 elvDesktop.Wallpaper = (Bitmap)com.prepareImage(com.toSystemPath(com.Config.GetConfig("Desktop", "Wallpaper").Setting));
-                elvDesktop.Pattern = new Bitmap(getPattern(com.Config.GetConfig("Desktop", "Pattern").Setting), 8, 8);
+                elvDesktop.PatternString= com.Config.GetConfig("Desktop", "Pattern").Setting;
                 elvDesktop.UpdateDesktop = true;
               }
             catch (Exception ex)
@@ -78,6 +78,7 @@ namespace ProChic4._8
                 Debug.WriteLine("Desktop: Load: " + ex.ToString());
             }
         }
+        #region AppLauncher
         private void MenuSeup()
         {
             btnAppLauncher.Location = new Point(com.Config.GetConfigAsInt32("AppLauncher", "X"), com.Config.GetConfigAsInt32("AppLauncher", "Y"));
@@ -89,7 +90,7 @@ namespace ProChic4._8
             foreach(ConfigGroup cGrp in conMenu.GetAllConfigsGroup()) {
                 if (cGrp.Name==("Image")) {                  
                 }else if (cGrp.Name == "Split"){
-                    tsmiRoot.DropDownItems.Add(new ToolStripSeparator());
+                    menAppLaunch.Items.Add(new ToolStripSeparator());
                 }else{
                     menAppLaunch.Items.Add(BuildMenu(cGrp));
                 }
@@ -107,26 +108,6 @@ namespace ProChic4._8
                 picAppLaunch.Image = b;
                 picAppLaunch.BackColor = com.convertColour((conMenu.GetConfig("Image", "BackgroundCol").Setting));
             }
-        }
-        public Image getPattern(string patternString)
-        {
-            int y = 0;
-            System.Drawing.Bitmap canvasbitmap = new System.Drawing.Bitmap(152, 152);
-            Graphics g = Graphics.FromImage(canvasbitmap);
-            if (patternString == "(None)")
-                return canvasbitmap;
-            foreach (var dec in patternString.Split(' '))
-            {
-                int x = 0;
-                for (int index = 0; index <= 7; index++)
-                {
-                    if (Convert.ToString(Convert.ToInt32(dec), 2).PadLeft(8, '0').Substring(index, 1) == "1")
-                        g.FillRectangle(Brushes.Black, x * 19, y * 19, 19, 19);
-                    x += 1;
-                }
-                y += 1;
-            }
-            return canvasbitmap;
         }
         private ToolStripMenuItem BuildMenu(ConfigGroup conGroup)
         {
@@ -227,6 +208,7 @@ namespace ProChic4._8
             if (com.Config.GetConfigGroup("Extensions").Contains(Ext) > -1) return com.Config.GetConfig("Extensions", Ext).Setting.Split('^')[0];
             throw new Exception("File Extention not regristered");
         }
+        #endregion AppLauncher
         private void addPanelItem(ref AppHolder app)
         {
             apps.Add(app.ProcessHandle, app);
@@ -269,15 +251,13 @@ namespace ProChic4._8
                         {
                             DialogResult = DialogResult.Cancel;
                             Debug.WriteLine("Desktop: Shutting Down");
-                            this.Close();
-                            thrdFileListener.Abort();
+                            DesktopClosing();
                         }
                         else if (temp == "ProChicSuspend")
                         {
                             DialogResult = DialogResult.OK;
                             Debug.WriteLine("Desktop: Suspend");
-                            this.Close();
-                            thrdFileListener.Abort();
+                            DesktopClosing();
                         }
                         else
                         {
@@ -286,12 +266,26 @@ namespace ProChic4._8
                                 AppHolder app = new AppHolder(ProperAppLaunch(temp), "");
                                 if (app != null) elvDesktop.Controls.Add(app);
                                 app.AppClose += clospro;
+                                app.FocusChanged += FocChange;
                                 addPanelItem(ref app);
                             });
                         }
                     }
                 }
             }
+        }
+        private void DesktopClosing()
+        {
+            for (int i = 0; i < apps.Count;){
+                IntPtr id = apps.Values.ElementAt(i).ProcessHandle;
+                apps.Values.ElementAt(i).Close(CloseReason.FormOwnerClosing);
+                while (apps.ContainsKey(id)) { }
+            }
+            this.Close();
+            thrdFileListener.Abort();
+        }
+        private void FocChange(object sender, EventArgs e){
+            currentFocus=FocusCheck(currentFocus, (IntPtr)sender);
         }
         private void clospro(IntPtr Apphandler)
         {
@@ -301,22 +295,28 @@ namespace ProChic4._8
             panItems[Apphandler].Dispose();
             panItems.Remove(Apphandler);
         }
-        private void ActiveApp()
-        {
-            IntPtr currentFocus = IntPtr.Zero;
-            IntPtr newFocus;
-            while (!IsDisposed)
+        IntPtr currentFocus = IntPtr.Zero;
+        private IntPtr FocusCheck(IntPtr _currentFocus, IntPtr newFocus){
+            if (_currentFocus != newFocus && newFocus != IntPtr.Zero)
             {
-                newFocus = GetForegroundWindow();
-                if (currentFocus != newFocus && newFocus !=IntPtr.Zero)
+                if (this.Handle == newFocus) Debug.WriteLine("Active Desktop: Desktop has focus");
+                for (int i = 0; i < panItems.Count;i++)
                 {
-                    if (this.Handle == newFocus) Debug.WriteLine("Active Desktop: Desktop has focus");
-                    if (currentFocus != IntPtr.Zero && apps.ContainsKey(currentFocus)) apps[currentFocus].Focused = false;
-                    if (currentFocus != IntPtr.Zero && panItems.ContainsKey(currentFocus)) panItems[currentFocus].Held = false;
-                    currentFocus = newFocus;
-                    if (apps.ContainsKey(newFocus)) apps[newFocus].Focused=true;
-                    if (panItems.ContainsKey(newFocus)) panItems[newFocus].Held = true;
+                    panItems.Values.ElementAt(i).Held = false;
                 }
+                for (int i = 0; i < apps.Count;i++)
+                {
+                    apps.Values.ElementAt(i).Focused = false;
+                }
+                _currentFocus = newFocus;
+                if (apps.ContainsKey(newFocus)) apps[newFocus].Focused = true;
+                if (panItems.ContainsKey(newFocus)) panItems[newFocus].Held = true;
+            }
+            return _currentFocus;
+        }
+        private void ActiveApp(){
+            while (!IsDisposed){
+                currentFocus = FocusCheck(currentFocus, GetForegroundWindow());                
             }
             thrdActiveApp.Abort();
         }
